@@ -1,7 +1,7 @@
 package bgu.spl.mics;
 
 import java.util.Queue;
-
+import java.util.Vector
 /**
  * The {@link MessageBusImpl class is the implementation of the MessageBus interface.
  * Write your implementation here!
@@ -9,7 +9,7 @@ import java.util.Queue;
  */
 public class MessageBusImpl implements MessageBus {
    	private  static MessageBusImpl Bus;// addition, the message bus
-	private Queue listOfQueues;//addition, queue for every micro-service using the bus
+	private   private Vector<Queue> listOfQueues;//addition, queue for every micro-service using the bus
 
 	@Override
 	public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
