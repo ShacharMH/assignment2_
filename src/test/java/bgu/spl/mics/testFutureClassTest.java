@@ -7,10 +7,11 @@ import org.junit.Before;
 import org.junit.Test;
 import  java.lang.Thread;
 import java.sql.Time;
+import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 
-///SHACHAR
+///SHACHAR - done
 import static org.junit.Assert.*;
 
 public class testFutureClassTest extends Future {
@@ -92,10 +93,13 @@ public class testFutureClassTest extends Future {
     */
     @Test public void testGetTimeout_resultisresolved() {
         future.resolve(42);
+        Calendar start = Calendar.getInstance();
         int result = future.get(2, TimeUnit.SECONDS);
-        // how can I know how much time passes between the execution of the prev line the next line?
+        Calendar end = Calendar.getInstance();
         assertEquals(42,result);
         future.resolve(null);
+        System.out.println("start: " + start.toString());
+        System.out.println("end: " + end.toString());
     }
 
     @Test public void testGetTimeout_resultisresolvedpriortomaxtime() {
@@ -107,10 +111,13 @@ public class testFutureClassTest extends Future {
     }
 
     @Test public void testGetTimeout_resultisnotresolved() {
+        Calendar start = Calendar.getInstance();
         int result = future.get(2, TimeUnit.SECONDS);
+        Calendar end = Calendar.getInstance();
         // should get to the next line with _42_ in _result_
         assertEquals(null, result);
-        // see how much time it had waited.
+        System.out.println("start: " + start.toString());
+        System.out.println("end: " + end.toString());
     }
 
     @After
