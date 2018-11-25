@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 ///SHACHAR - done
 import static org.junit.Assert.*;
 
-public class testFutureClassTest extends Future {
+public class testFutureClassTest extends Future {//test
 
     private Future<Integer> future;
 
