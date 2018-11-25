@@ -6,10 +6,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import  java.lang.Thread;
+import java.sql.Time;
 import java.util.concurrent.TimeUnit;
 
 
-
+///SHACHAR
 import static org.junit.Assert.*;
 
 public class testFutureClassTest extends Future {
@@ -48,7 +49,7 @@ public class testFutureClassTest extends Future {
             }
         };
         t.start();
-        assertEquals(3,result);
+        assertEquals(null,result);
         future.resolve(null);
     }
 
@@ -83,25 +84,33 @@ public class testFutureClassTest extends Future {
         assertEquals(false, future.isDone());
     }
 
-    /* things to check:
+    /* things to check _GetTimeout_:
         1. if the result is resolved, return the result
         2. if the result is not resolved, it waits the ,maximum amount of time to get the reslt:
             a. if the result is resolved prior max_time i time t, it returns the result in time t
             b. if the result is not resolved until max_time, returns null.
     */
     @Test public void testGetTimeout_resultisresolved() {
-
+        future.resolve(42);
+        int result = future.get(2, TimeUnit.SECONDS);
+        // how can I know how much time passes between the execution of the prev line the next line?
+        assertEquals(42,result);
+        future.resolve(null);
     }
 
     @Test public void testGetTimeout_resultisresolvedpriortomaxtime() {
-        TimeUnit timeunit = TimeUnit.SECONDS;
-        future.get(4, timeunit);
+        int result = future.get(2, TimeUnit.SECONDS);
         future.resolve(42);
+        // should get to the next line with _42_ in _result_
+        assertEquals(42, result);
+        future.resolve(null);
     }
 
     @Test public void testGetTimeout_resultisnotresolved() {
-
-        Assert.fail("not yet implemented");
+        int result = future.get(2, TimeUnit.SECONDS);
+        // should get to the next line with _42_ in _result_
+        assertEquals(null, result);
+        // see how much time it had waited.
     }
 
     @After
