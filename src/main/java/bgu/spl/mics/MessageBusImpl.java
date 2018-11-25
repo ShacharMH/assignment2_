@@ -1,17 +1,29 @@
 package bgu.spl.mics;
 
+import java.util.Queue;
+
 /**
  * The {@link MessageBusImpl class is the implementation of the MessageBus interface.
  * Write your implementation here!
  * Only private fields and methods can be added to this class.
  */
 public class MessageBusImpl implements MessageBus {
+   	private  static MessageBusImpl Bus;// addition, the message bus
+	private Queue listOfQueues;//addition, queue for every micro-service using the bus
 
 	@Override
 	public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
 		// TODO Auto-generated method stub
-
+		Callback<E> call -> {
+			@Override
+			public void call(E c) {
+				Future<T> fut = new Future<>();
+				fut = m.sendEvent();
+			}
+		}
+		m.subscribeEvent(type,call );
 	}
+
 
 	@Override
 	public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {

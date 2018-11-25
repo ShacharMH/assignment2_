@@ -32,23 +32,25 @@ public class Future<T> {
      * 	       
      */
 	public T get() {
-		//TODO: implement this.
-		return null;
+		if (result!=null) return result;
+		else return null;
 	}
 	
 	/**
      * Resolves the result of this Future object.
      */
 	public void resolve (T result) {
-		//TODO: implement this.
+		setResult(result);
 	}
 	
 	/**
      * @return true if this object has been resolved, false otherwise
      */
 	public boolean isDone() {
-		//TODO: implement this.
-		return false;
+		if(result!=null)
+			return true;
+		else
+			return false;
 	}
 	
 	/**
@@ -63,14 +65,20 @@ public class Future<T> {
      *         elapsed, return null.
      */
 	public T get(long timeout, TimeUnit unit) {
-		//TODO: implement this.
+		while( unit.convert(timeout, unit)<timeout) {//possibly not how i'm supposed to wait ,ask aviad/do this with sleep
+			if (isDone())
+				return result;
+		}
 		return null;
+
 	}
 
 	private void setResult(T result) {
+		this.result=result;
 	}
 
 	private void setResolved() {
+		resolved=true;
 	}
 
 }

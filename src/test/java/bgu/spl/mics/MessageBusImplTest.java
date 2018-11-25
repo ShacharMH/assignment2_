@@ -2,7 +2,9 @@ package bgu.spl.mics;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Before;
+import java.util.Queue;
+import java.util.Vector;
+
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -10,55 +12,63 @@ import static org.junit.Assert.*;
 ///AMIR
 
 public class MessageBusImplTest implements MessageBus {
-
+    private MessageBusImpl Bus;
+    private Vector<Queue> listOfQueues;
     @Before
     public void setUp() throws Exception {
-        this.
+        this.Bus=createBus();
+        this.listOfQueues=new Vector<Queue>();
     }
 
-    @After
-    public void tearDown() throws Exception {
+    protected MessageBusImpl createBus(){
+        return new MessageBusImpl();
     }
 
     @Test
-    //PRE: recieve some sort of an event, and a micro-service interested in handling it
-    //POST:
-    public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
-
+    //command, divided into command of "subscribe event" of the micro service(insert it into the queue of the micro service)
+    //pre: @param "?"!=null
+    //pre:,@param m!=null
+    //POST:@MicroService m has defined a callback according to the event
+    <T> boolean  checkEvent(Class a ,extends Event<T>> Message) {
+        return a==null;
     }
 
-    @Override
+    @Test
     public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
 
     }
 
-    @Override
+    @Test
     public <T> void complete(Event<T> e, T result) {
 
     }
 
-    @Override
+    @Test
     public void sendBroadcast(Broadcast b) {
 
     }
 
-    @Override
+    @Test
     public <T> Future<T> sendEvent(Event<T> e) {
         return null;
     }
 
-    @Override
+    @Test
     public void register(MicroService m) {
 
     }
 
-    @Override
+    @Test
     public void unregister(MicroService m) {
 
     }
 
-    @Override
+    @Test
     public Message awaitMessage(MicroService m) throws InterruptedException {
         return null;
+    }
+
+    @After
+    public void tearDown() throws Exception {
     }
 }
