@@ -64,12 +64,21 @@ public class Future<T> {
      * 	       wait for {@code timeout} TimeUnits {@code unit}. If time has
      *         elapsed, return null.
      */
-	public T get(long timeout, TimeUnit unit) {
-		while( unit.convert(timeout, unit)<timeout) {//possibly not how i'm supposed to wait ,ask aviad/do this with sleep
-			if (isDone())
-				return result;
+	public T get(long timeout, TimeUnit unit) {//did it in the "sleep & check" guarding method
+		unit.sleep(timeout / 3);
+		if (isDone()) {
+			return result;
+		}
+		unit.sleep(timeout / 3);
+		if (isDone()) {
+			return result;
+		}
+		unit.sleep(timeout / 3);
+		if (isDone()) {
+			return result;
 		}
 		return null;
+	}
 
 	}
 
