@@ -56,10 +56,11 @@ public class BookInventoryInfo {
 		return price;
 	}
 
-	//reflections on thread-safety: initialization of this object happens only once, so I don't mind the constructor
-	//not being thread-safe. BUT, when a book gets sold, then the amount should decrease by 1, and that function may be activate
-	//simultaneously by a number of threads. hence it's synchronized. on the other hand's other hand, there must be a (more) efficient
-	//way for synchronizing without blocking the other threads.
+	/* reflections on thread-safety: initialization of this object happens only once, so I don't mind the constructor
+	not being thread-safe. BUT, when a book gets sold, then the amount should decrease by 1, and that function may be activate
+	simultaneously by a number of threads. hence it's synchronized. on the other hand's other hand, there must be a (more) efficient
+	way for synchronizing without blocking the other threads.
+	*/
 	public synchronized void decreaseAmount() {
 		amount--;
 	}
