@@ -1,5 +1,11 @@
 package bgu.spl.mics;
 
+import jdk.internal.util.xml.impl.Pair;
+
+import java.util.HashMap;
+import java.util.Map;
+import bgu.spl.mics.MessageBus;
+
 /**
  * The MicroService is an abstract class that any micro-service in the system
  * must extend. The abstract MicroService class is responsible to get and
@@ -22,6 +28,10 @@ public abstract class MicroService implements Runnable {
 
     private boolean terminated = false;
     private final String name;
+    private HashMap<Class,Callback> broadcastMap = new HashMap<>();
+    private HashMap<Class,Callback> eventMap = new HashMap<>();
+    private MessageBus MB;
+    //private Future future;
 
     /**
      * @param name the micro-service name (used mainly for debugging purposes -
@@ -53,7 +63,11 @@ public abstract class MicroService implements Runnable {
      *                 queue.
      */
     protected final <T, E extends Event<T>> void subscribeEvent(Class<E> type, Callback<E> callback) {
-        //TODO: implement this.
+        //what about exceptions? what can go wrong?
+        if (type == null)
+            throw new NullPointerException("trying to insert a null Event!");
+        MB.subscribeEvent(type, this);
+        this.eventMap.put(type, callback);
     }
 
     /**
@@ -77,7 +91,11 @@ public abstract class MicroService implements Runnable {
      *                 queue.
      */
     protected final <B extends Broadcast> void subscribeBroadcast(Class<B> type, Callback<B> callback) {
-        //TODO: implement this.
+        //what about exceptions? what can go wrong?
+        if (type == null)
+            throw new NullPointerException("trying to insert a null Broadcast!");
+        MB.subscribeBroadcast(type, this);
+        this.broadcastMap.put(type,callback);
     }
 
     /**
@@ -93,8 +111,9 @@ public abstract class MicroService implements Runnable {
      * 	       			null in case no micro-service has subscribed to {@code e.getClass()}.
      */
     protected final <T> Future<T> sendEvent(Event<T> e) {
+        return MB.sendEvent(e);
         //TODO: implement this.
-        return null; //TODO: delete this line :)
+        //return null; //TODO: delete this line :)
     }
 
     /**
@@ -104,6 +123,7 @@ public abstract class MicroService implements Runnable {
      * @param b The broadcast message to send
      */
     protected final void sendBroadcast(Broadcast b) {
+        MB.sendBroadcast(b);
         //TODO: implement this.
     }
 
@@ -118,6 +138,7 @@ public abstract class MicroService implements Runnable {
      *               {@code e}.
      */
     protected final <T> void complete(Event<T> e, T result) {
+        MB.complete(e,result);
         //TODO: implement this.
     }
 
@@ -142,15 +163,41 @@ public abstract class MicroService implements Runnable {
         return name;
     }
 
+
     /**
      * The entry point of the micro-service. TODO: you must complete this code
      * otherwise you will end up in an infinite loop.
      */
     @Override
     public final void run() {
+        MB.register(this);
         initialize();
         while (!terminated) {
-            System.out.println("NOT IMPLEMENTED!!!"); //TODO: you should delete this line :)
+            Message message = null;
+            try {
+                message = MB.awaitMessage(this);
+            } catch (InterruptedException e) {
+                System.out.println("message bus threw exception while micro service: " + this.getName() + " tried to get a message from it using 'await message' function");
+            }
+            //check the type of the message - broadcast or event
+            //according to it, fetch the corresponding callback from the corresponding hashMap.
+            if (message instanceof Event) {
+                Event event = (Event)message;
+                Callback callback = eventMap.get(event);
+                if (callback == null)
+                    throw new NullPointerException("callback is null, e.g. there's no entry of event of class " + event.getClass() + ".");
+                else
+                    callback.call(this);
+            } else {
+                Broadcast broadcast = (Broadcast)message;
+                Callback callback = broadcastMap.get(broadcast);
+                if (callback == null)
+                    throw new NullPointerException("callback is null, e.g. there's no entry of event of class " + broadcast.getClass() + ".");
+                else
+                    callback.call(this);
+            }
+
+            //System.out.println("NOT IMPLEMENTED!!!"); //TODO: you should delete this line :)
         }
     }
 
