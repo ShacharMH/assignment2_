@@ -58,29 +58,25 @@ public class Future<T> {
      * This method is non-blocking, it has a limited amount of time determined
      * by {@code timeout}
      * <p>
-     * @param timeout 	the maximal amount of time units to wait for the result.
+     * @param timout 	the maximal amount of time units to wait for the result.
      * @param unit		the {@link TimeUnit} time units to wait.
      * @return return the result of type T if it is available, if not, 
      * 	       wait for {@code timeout} TimeUnits {@code unit}. If time has
      *         elapsed, return null.
      */
 	public T get(long timeout, TimeUnit unit) {//did it in the "sleep & check" guarding method
-		// when you do "sleep", the thread throws an exception (I think it's InterruptedException)
-		// that we must catch, else the program will crash.
-		unit.sleep(timeout / 3);
-		if (isDone()) {
-			return result;
-		}
-		unit.sleep(timeout / 3);
-		if (isDone()) {
-			return result;
-		}
-		unit.sleep(timeout / 3);
-		if (isDone()) {
-			return result;
+		for(int i=0;i<3;i++) {
+			try {
+				unit.sleep(timeout / 3);
+			}
+			catch (InterruptedException e){
+				System.out.println("Exception: " );
+			}
+			if (isDone()) return result;
 		}
 		return null;
 	}
+
 
 
 
