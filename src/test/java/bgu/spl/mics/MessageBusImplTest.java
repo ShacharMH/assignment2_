@@ -25,10 +25,7 @@ public class MessageBusImplTest implements MessageBus {
     }
 
     @Test
-    //command, divided into command of "subscribe event" of the micro service(insert it into the queue of the micro service)
-    //pre: @param "?"!=null
-    //pre:,@param m!=null
-    //POST:@MicroService m has defined a callback according to the event
+
     <T> boolean  checkEvent(Class a ,extends Event<T>> Message) {
         return a==null;
     }

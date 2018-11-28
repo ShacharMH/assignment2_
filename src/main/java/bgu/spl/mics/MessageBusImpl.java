@@ -1,5 +1,7 @@
 package bgu.spl.mics;
 
+import java.util.HashMap;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Vector;
 /**
@@ -8,21 +10,39 @@ import java.util.Vector;
  * Only private fields and methods can be added to this class.
  */
 public class MessageBusImpl implements MessageBus {
-   	private  static MessageBusImpl Bus;// addition, the message bus
-	private   private Vector<Queue> listOfQueues;//addition, queue for every micro-service using the bus
+	private static HashMap<String,Integer> map;//addition, for mapping between micro-services and their queue identifier
+	private static MessageBusImpl bus=null;
+	private Vector<PriorityQueue> listOfQueues;//addition, queue for every micro-service using the bus
+	private MessageBusImpl(){}
+
+	public static MessageBusImpl getInstance(){
+		if (bus==null){
+			bus = new MessageBusImpl();
+		}
+		return bus;
+	}
+
+
 
 	@Override
-	public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
-		// TODO Auto-generated method stub
-		Callback<E> call -> {
+	//command, divided into command of "subscribe event" of the micro service(insert it into the queue of the micro service)
+	//@pre: @param "?"!=null
+	//@pre:@param m!=null,
+	//@post:@MicroService m has the event in its message queue, queue.size==pre:queue.size+1
+	//@post:@param type has a field for @param T
+	 public   <T> void subscribeEvent (Class <? extends Event<T>> type, MicroService m) {
+		PriorityQueue<Event<?>> q=new PriorityQueue<Event<?>>();//Create a queue for these kind of messages
+		listOfQueues.add(q);//add the queue to the list
+		Integer a=listOfQueues.size();//get the identifier for the queue
+		map.put(m.getName(),a-1);//establish the connection between the micro-service and its queue
+		q.add(type);
+
+		Callback c
+		m.subscribeEvent(type.getClass(),);
 			@Override
-			public void call(E c) {
-				Future<T> fut = new Future<>();
-				fut = m.sendEvent();
-			}
+
 		}
-		m.subscribeEvent(type,call );
-	}
+
 
 
 	@Override
@@ -46,7 +66,11 @@ public class MessageBusImpl implements MessageBus {
 	
 	@Override
 	public <T> Future<T> sendEvent(Event<T> e) {
-		// TODO Auto-generated method stub
+
+		PriorityQueue p=listOfQueues.elementAt(map.get(e.getClass()));//get the suitable queue for this kind of event
+		p.add(e);//insert the event to this queue
+
+
 		return null;
 	}
 
@@ -69,5 +93,7 @@ public class MessageBusImpl implements MessageBus {
 	}
 
 	
+
+
 
 }
