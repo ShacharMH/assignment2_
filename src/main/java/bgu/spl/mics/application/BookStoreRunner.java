@@ -1,12 +1,11 @@
 package bgu.spl.mics.application;
 
 import bgu.spl.mics.application.passiveObjects.BookInventoryInfo;
-import jdk.nashorn.internal.parser.JSONParser;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
+import java.io.*;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 
 
@@ -19,6 +18,7 @@ public class BookStoreRunner implements Serializable {
     //this long int will act as an ID for serialization and deserialization of the class. I don't know if it's really needed.
     private static final long serialVersionUID = 1234L;
     private BookInventoryInfo[] inventory;
+    private Gson parser = new Gson();
     // need to add all the other passive object when time comes :)
 
     public static void main(String[] args) {
@@ -27,8 +27,13 @@ public class BookStoreRunner implements Serializable {
     }
 
     private static void deserialize() {
-                   // FileInputStream fileIn = new FileInputStream("input.json");
-            //ObjectInputStream objIn = new ObjectInputStream(fileIn);
+        try {
+            FileInputStream fileIn = new FileInputStream("input.json");
+            ObjectInputStream objIn = new ObjectInputStream(fileIn);
+
+        } catch (FileNotFoundException e1) {
+        } catch (IOException e2) {
+        } catch (Exception e3) {}
 
 
     }
