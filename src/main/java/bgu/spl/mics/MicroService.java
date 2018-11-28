@@ -30,7 +30,7 @@ public abstract class MicroService implements Runnable {
     private final String name;
     private HashMap<Class,Callback> broadcastMap = new HashMap<>();
     private HashMap<Class,Callback> eventMap = new HashMap<>();
-    private MessageBus MB;
+    private MessageBus MB; // I don't know whether it's the right way.
     //private Future future;
 
     /**
@@ -115,6 +115,7 @@ public abstract class MicroService implements Runnable {
         //TODO: implement this.
         //return null; //TODO: delete this line :)
     }
+
 
     /**
      * A Micro-Service calls this method in order to send the broadcast message {@code b} using the message-bus

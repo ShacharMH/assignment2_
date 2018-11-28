@@ -12,14 +12,24 @@ package bgu.spl.mics.application.passiveObjects;
  * <p>
  * You can add ONLY private fields and methods to this class as you see fit.
  */
+
+//SHACHAR
 public class Inventory {
+
+	private BookInventoryInfo myInventory;
+
+	/* this tiny class helps us achieve lazy initialization (so we don't get an instance the second we import this class.
+	!!Because only a single thread loads classes, only one instance will be created!!
+	 */
+	private static class InventoryHolder {
+		private static Inventory instance = new Inventory();
+	}
 
 	/**
      * Retrieves the single instance of this class.
      */
 	public static Inventory getInstance() {
-		//TODO: Implement this
-		return null;
+		return InventoryHolder.instance;
 	}
 	
 	/**

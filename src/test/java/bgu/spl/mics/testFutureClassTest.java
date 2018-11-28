@@ -1,12 +1,10 @@
 package bgu.spl.mics;
 
-import bgu.spl.mics.Future;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import  java.lang.Thread;
-import java.sql.Time;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
@@ -19,7 +17,7 @@ public class testFutureClassTest extends Future {
     private Future<Integer> future;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         this.future = createFuture();
     }
 
@@ -114,14 +112,14 @@ public class testFutureClassTest extends Future {
         Calendar start = Calendar.getInstance();
         int result = future.get(2, TimeUnit.SECONDS);
         Calendar end = Calendar.getInstance();
-        // should get to the next line with _42_ in _result_
+        // should get to the next line with _null_ in _result_
         assertEquals(null, result);
         System.out.println("start: " + start.toString());
         System.out.println("end: " + end.toString());
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         this.future = null;
     }
 }
