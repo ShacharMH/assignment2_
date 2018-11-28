@@ -16,7 +16,7 @@ package bgu.spl.mics.application.passiveObjects;
 //SHACHAR
 public class Inventory {
 
-	private BookInventoryInfo myInventory;
+	private BookInventoryInfo[] myInventory;
 
 	/* this tiny class helps us achieve lazy initialization (so we don't get an instance the second we import this class.
 	!!Because only a single thread loads classes, only one instance will be created!!

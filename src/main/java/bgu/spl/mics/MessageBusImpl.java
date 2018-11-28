@@ -1,5 +1,7 @@
 package bgu.spl.mics;
 
+import jdk.nashorn.internal.runtime.regexp.JoniRegExp;
+
 import java.util.HashMap;
 import java.util.PriorityQueue;
 import java.util.Queue;
@@ -10,16 +12,23 @@ import java.util.Vector;
  * Only private fields and methods can be added to this class.
  */
 public class MessageBusImpl implements MessageBus {
-	private static HashMap<String,Integer> map;//addition, for mapping between micro-services and their queue identifier
+
+	private HashMap<Event,Queue<MicroService>> hashEventToMicroServiceQueue;
+	private HashMap<Broadcast,Queue<MicroService>> hashBroadcastToMicroServicesQueue;
+	private HashMap<MicroService,Queue<Message>> hashMicroServiceToMessagesQueue;
 	private static MessageBusImpl bus=null;
-	private Vector<PriorityQueue> listOfQueues;//addition, queue for every micro-service using the bus
-	private MessageBusImpl(){}
 
 	public static MessageBusImpl getInstance(){
 		if (bus==null){
 			bus = new MessageBusImpl();
 		}
 		return bus;
+	}
+
+	private MessageBusImpl () {
+		this.hashBroadcastToMicroServicesQueue = new HashMap<>();
+		this.hashEventToMicroServiceQueue = new HashMap<>();
+		this.hashMicroServiceToMessagesQueue = new HashMap<>();
 	}
 
 
