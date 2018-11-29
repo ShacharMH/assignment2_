@@ -1,6 +1,8 @@
 package bgu.spl.mics.application.passiveObjects;
 
 
+import java.awt.print.Book;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Passive data-object representing the store inventory.
@@ -11,18 +13,24 @@ package bgu.spl.mics.application.passiveObjects;
  * You must not alter any of the given public methods of this class.
  * <p>
  * You can add ONLY private fields and methods to this class as you see fit.
+ * GUIDELINE: ONLY INVENTORY TOUCHES THE INSTANCES OF THE BookInventoryInfo!
  */
 
 //SHACHAR
 public class Inventory {
 
-	private BookInventoryInfo[] myInventory;
+	private ConcurrentHashMap<String,BookInventoryInfo> myInventory;
+	private boolean isLoaded = false;
 
 	/* this tiny class helps us achieve lazy initialization (so we don't get an instance the second we import this class.
 	!!Because only a single thread loads classes, only one instance will be created!!
 	 */
 	private static class InventoryHolder {
 		private static Inventory instance = new Inventory();
+	}
+
+	private Inventory() {
+		myInventory = new ConcurrentHashMap<>();
 	}
 
 	/**
@@ -39,8 +47,13 @@ public class Inventory {
      * @param inventory 	Data structure containing all data necessary for initialization
      * 						of the inventory.
      */
+
+	//should be thread safe. only one thread initializes it.
 	public void load (BookInventoryInfo[ ] inventory ) {
-		
+		for (BookInventoryInfo book: inventory) {
+			myInventory.put(book.getBookTitle(), book);
+		}
+		isLoaded = true;
 	}
 	
 	/**
@@ -51,9 +64,30 @@ public class Inventory {
      * 			The first should not change the state of the inventory while the 
      * 			second should reduce by one the number of books of the desired type.
      */
+	/* should be thread safe.
+	if(checkAvailabiltyAndGetPrice) > 0 { -> means the book in in inventory.
+	take(book)
+	book.decreaseamount();
+	 -> should be synchronized.
+	 2. lock only on the certain book.
+	 Things to notice:
+	 a. I still need to check the invariants are true after _take_ calls _checkAvailabiltyAndGetPrice_.
+	 */
+
 	public OrderResult take (String book) {
-		
-		return null;
+		synchronized ((myInventory.get(book))) {
+			if (isLoaded) {
+				if (checkAvailabiltyAndGetPrice(book) > 0) {
+					// what do I do if another thread gets involved with __checkAvailabiltyAndGetPrice__ and then it's no longer true?
+					return OrderResult.SUCCESSFULLY_TAKEN;
+				}
+				else {
+					return OrderResult.NOT_IN_STOCK;
+				}
+			} else {
+				return null;
+			}
+		}
 	}
 	
 	
