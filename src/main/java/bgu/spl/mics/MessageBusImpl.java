@@ -17,6 +17,9 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class MessageBusImpl implements MessageBus {
 
+
+
+
 	private final ConcurrentHashMap<Class <? extends Event>,ConcurrentLinkedQueue<MicroService>> hashEventToMicroServiceQueue;
 	private final ConcurrentHashMap<Class<? extends Broadcast>,ConcurrentLinkedQueue<MicroService>> hashBroadcastToMicroServicesQueue;
 	private final ConcurrentHashMap<MicroService, BlockingQueue<Message>> hashMicroServiceToMessagesQueue;
@@ -55,6 +58,7 @@ public class MessageBusImpl implements MessageBus {
 	 */
 
 	 public   <T> void subscribeEvent (Class <? extends Event<T>> type, MicroService m) {//problem with compilation
+	     /*
 		//see if event already exists.
 		// if so, add the ms to the event's queue.
 		//else, push the new couple (event, ms), while creating the ms's queue for the event.
@@ -71,6 +75,7 @@ public class MessageBusImpl implements MessageBus {
             Queue<Message> M=listOfMessagesMicroServiceSubscribedTo.get(m);//Adding broadcast to list of broadcast/events
             M.add(type);//not sure why there is a compilation problem
         }
+        */
 	 }
 
 
@@ -78,6 +83,7 @@ public class MessageBusImpl implements MessageBus {
 
 	//The same as above(subscribeEvent), for broadcasts
 	public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {//problem with compilation
+	     /*
         if(hashBroadcastToMicroServicesQueue.containsKey(type)){
             ConcurrentLinkedQueue<MicroService> BroadcastsMicroserviceList = hashBroadcastToMicroServicesQueue.get(type);
             BroadcastsMicroserviceList.add(m);
@@ -90,7 +96,7 @@ public class MessageBusImpl implements MessageBus {
             ConcurrentLinkedQueue<MicroService> BroadcastsMicroserviceList = null;
             BroadcastsMicroserviceList.add(m);
             hashBroadcastToMicroServicesQueue.put(type, BroadcastsMicroserviceList);
-        }
+        }*/
     }
 
 
@@ -167,7 +173,7 @@ public class MessageBusImpl implements MessageBus {
         else throw new IllegalStateException();
     }
 
-	
+
 
 
 

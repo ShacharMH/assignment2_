@@ -6,12 +6,6 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-/* Thought Bubble:
-I want to see if while using 2 threads everything still works correctly
-
- */
-
-
 public class InventoryTest {
 
     private BookInventoryInfo[] bookInventoryInfos;
@@ -85,7 +79,7 @@ public class InventoryTest {
     @Test
     public void printInventoryToFile() {
         inventory.printInventoryToFile("testPrintInventoryToFile");
-        // assertTrue(file(exists);
+        // I manually checked the that it is printed to the file correctly.
 
     }
 

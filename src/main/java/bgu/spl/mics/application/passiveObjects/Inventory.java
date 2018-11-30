@@ -146,8 +146,11 @@ public class Inventory {
 				Object[] book = new Object[2];
 				book[0] = bookNamesList[i];
 				book[1] = clonedInventory.get(bookNamesList[i]).getAmountInInventory();
-				writer.write(gson.toJson(book));
+				String json = gson.toJson(book);
+				System.out.println(json);
+				writer.write(json);
 			}
+			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
