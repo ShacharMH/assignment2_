@@ -51,7 +51,7 @@ public class Inventory {
      * 						of the inventory.
      */
 
-	//should be thread safe. only one thread initializes it.
+	//NOT thread safe. BUT only one thread initializes it.
 	public void load (BookInventoryInfo[] inventory ) {
 		int i = 0;
 		for (BookInventoryInfo book: inventory) {
@@ -74,7 +74,7 @@ public class Inventory {
      * 			second should reduce by one the number of books of the desired type.
      */
 
-	/* hopefully this is thread-safe:
+	/* this is thread-safe:
 	1. is synchronized on the relevant book
 	2. the answer returned from  _checkAvailabiltyAndGetPrice(book)_ is saved on the thread's stack so
 	   other threads can't touch it: https://www.youtube.com/watch?v=otCpCn0l4Wo
@@ -105,7 +105,7 @@ public class Inventory {
      * @return the price of the book if it is available, -1 otherwise.
      */
 
-	/* hopefully this is thread-safe:
+	/* this is thread-safe:
 	1. only one thread can touch one book at a time
 	2. doesn't change any object
 	 */
