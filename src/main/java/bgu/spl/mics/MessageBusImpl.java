@@ -20,7 +20,8 @@ public class MessageBusImpl implements MessageBus {
 	private final ConcurrentHashMap<Class <? extends Event>,ConcurrentLinkedQueue<MicroService>> hashEventToMicroServiceQueue;
 	private final ConcurrentHashMap<Class<? extends Broadcast>,ConcurrentLinkedQueue<MicroService>> hashBroadcastToMicroServicesQueue;
 	private final ConcurrentHashMap<MicroService, BlockingQueue<Message>> hashMicroServiceToMessagesQueue;
-	private final ConcurrentHashMap<MicroService, Queue<Message>> listOfMessagesMicroServiceSubscribedTo;//addition, helps to know where else to delete it from
+	private final ConcurrentHashMap<MicroService, Queue<Message>> listOfMessagesMicroServiceSubscribedTo;//addition, helps to know where else to delete microservice from
+    private final ConcurrentHashMap<Event,Future> MapBetweenEventAndFutureObj;//addition
 	private static MessageBusImpl bus=null;
 
 	public static MessageBusImpl getInstance(){
@@ -35,16 +36,12 @@ public class MessageBusImpl implements MessageBus {
 		this.hashEventToMicroServiceQueue = new ConcurrentHashMap<>();
 		this.hashMicroServiceToMessagesQueue = new ConcurrentHashMap<>();
 		this.listOfMessagesMicroServiceSubscribedTo = new ConcurrentHashMap<>();
+        MapBetweenEventAndFutureObj= new ConcurrentHashMap<>();
 	}
 
 
 
 	@Override
-	//command, divided into command of "subscribe event" of the micro service(insert it into the queue of the micro service)
-	//@pre: @param "?"!=null
-	//@pre:@param m!=null,
-	//@post:@MicroService m has the event in its message queue, queue.size==pre:queue.size+1
-	//@post:@param type has a field for @param T
 
 	/**
 	 * Subscribes {@code m} to receive {@link Event}s of type {@code type}.
@@ -54,22 +51,22 @@ public class MessageBusImpl implements MessageBus {
 	 * @param m    The subscribing micro-service..
 	 */
 
-	 public   <T> void subscribeEvent (Class <? extends Event<T>> type, MicroService m) {//problem with compilation
-		//see if event already exists.
-		// if so, add the ms to the event's queue.
-		//else, push the new couple (event, ms), while creating the ms's queue for the event.
-		if(hashEventToMicroServiceQueue.containsKey(type)){//if event exists
+    //problem with compilation
+    //see if event already exists.  if so, add the ms to the event's queue. else, push the new couple (event, ms), while creating the ms's queue for the event.
+	 public   <T> void subscribeEvent (Class <? extends Event<T>> type, MicroService m) {
+
+		if(hashEventToMicroServiceQueue.containsKey(type)){//if event already exists
             ConcurrentLinkedQueue<MicroService> EventsMicroServiceList = hashEventToMicroServiceQueue.get(type);//get the queue of microservices for this event
             EventsMicroServiceList.add(m);//add micro-service to the queue,now this microservice(thread) can handle this event too
             Queue<Message> M=listOfMessagesMicroServiceSubscribedTo.get(m);//Adding broadcast to list of broadcast/events
-            M.add(type);//not sure why there is a compilation problem
+            //M.add(type);//not sure why there is a compilation problem
         }
         else{
             ConcurrentLinkedQueue<MicroService> EventsMicroServiceList = null;//create queue of microservices for this event
             EventsMicroServiceList.add(m);//add micro-service to the queue,now this microservice(thread) can handle this event too
             hashEventToMicroServiceQueue.put(type, EventsMicroServiceList);//add this new pair to the list of <events,microservices that handle them>
             Queue<Message> M=listOfMessagesMicroServiceSubscribedTo.get(m);//Adding broadcast to list of broadcast/events
-            M.add(type);//not sure why there is a compilation problem
+            //M.add(type);//not sure why there is a compilation problem
         }
 	 }
 
@@ -82,7 +79,7 @@ public class MessageBusImpl implements MessageBus {
             ConcurrentLinkedQueue<MicroService> BroadcastsMicroserviceList = hashBroadcastToMicroServicesQueue.get(type);
             BroadcastsMicroserviceList.add(m);
             Queue<Message> M=listOfMessagesMicroServiceSubscribedTo.get(m);//Adding broadcast to list of broadcast/events
-            M.add(type);//not sure why there is a compilation problem
+           // M.add(type);//not sure why there is a compilation problem
 
 
         }
@@ -94,14 +91,11 @@ public class MessageBusImpl implements MessageBus {
     }
 
 
-	@Override
 
-	public <T> void complete(Event<T> e, T result) {//not sure about the future object and implementing this
-
-
-
-		// TODO Auto-generated method stub
-
+//Resolve the event's corresponding future object,AFTER it was sent back to the micro-service who sent the event in the first place
+	public <T> void complete(Event<T> e, T result) {
+        Future EventsAnswer=MapBetweenEventAndFutureObj.get(e);
+        EventsAnswer.resolve(result);
 	}
 
 
@@ -113,8 +107,7 @@ public class MessageBusImpl implements MessageBus {
         }
 	}
 
-	
-	//not finished, need to think of return value.
+	//Insert event to messagequeue of micro-service(round robin), return future object to micro-service that sent this event
 	public <T> Future<T> sendEvent(Event<T> e) {
 	     if (hashEventToMicroServiceQueue.containsKey(e)) {
              ConcurrentLinkedQueue<MicroService> QueueOfEvent = hashEventToMicroServiceQueue.get(e);//get the queue assigned to this type of event
@@ -122,24 +115,25 @@ public class MessageBusImpl implements MessageBus {
              BlockingQueue<Message> QueueOfMicroservice = hashMicroServiceToMessagesQueue.get(handleEvent);//get the message queue of the corresponding micro-service
              QueueOfMicroservice.add(e);//"add" and not "put", this is a non-blocking method
              QueueOfEvent.add(handleEvent);//MicroService is returned to the tail of the queue of the event, round robin invariant is maintained.
-             Future<T> result = null;//not sure about these last two lines
+             Future<T> result = null;//create future object that will hold the answer to this event
+             MapBetweenEventAndFutureObj.put(e,result);//put event and future object in map
              return result;
          }
 	     else
 	         return null;
 	}
 
-	@Override
+
 	public void register(MicroService m) {
 		BlockingQueue<Message> MessageList=null;//make message queue
-		Queue<Message> SubscribeList=null;//make a queue for all the events/broadcasts m will subscribe to
+		Queue<Message> SubscribeList=null;//make a queue for all the events/broadcasts m will subscribe to-problematic solution
 		hashMicroServiceToMessagesQueue.put(m, MessageList);
-		listOfMessagesMicroServiceSubscribedTo.put(m,SubscribeList);
+		listOfMessagesMicroServiceSubscribedTo.put(m,SubscribeList);//problematic
 	}
 
-	@Override
+//see in to how micro-service remembers the messages it has subscribed to, current solution is problematic
 	public void unregister(MicroService m) {
-		// TODO Auto-generated method stub
+
     //include deleting it from events/broadcast queue
 
         Queue<Message> DeleteList=listOfMessagesMicroServiceSubscribedTo.get(m);
@@ -158,8 +152,9 @@ public class MessageBusImpl implements MessageBus {
 	 }
 
 
+//need to add interupted mechanism
 	public Message awaitMessage(MicroService m) throws InterruptedException {//need to use interupted mechanism
-        // TODO Auto-generated method stub
+
         if (hashMicroServiceToMessagesQueue.containsKey(m)) {
             Message handleNow = hashMicroServiceToMessagesQueue.get(m).take();//get the last Message from the message Queue
             return handleNow;
