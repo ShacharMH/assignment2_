@@ -10,36 +10,49 @@ import java.util.List;
  */
 public class Customer {
 
+	private String name;
+	private int Id;
+	private String address;
+	private int distance;
+	private volatile int creditAmount;
+	private int creditNumber;
+	private List<OrderReceipt> orderReceipts;
+
+
+	public Customer(String name, int Id, String address, int distance, int creditAmount, int creditNumber, List<OrderReceipt> orderReceipts) {
+		this.name = name;
+		this.Id = Id;
+		this.address = address;
+		this.creditAmount = creditAmount;
+		this.creditNumber = creditNumber;
+		this.orderReceipts = orderReceipts;
+	}
 	/**
      * Retrieves the name of the customer.
      */
 	public String getName() {
-		// TODO Implement this
-		return null;
+		return name;
 	}
 
 	/**
      * Retrieves the ID of the customer  . 
      */
 	public int getId() {
-		// TODO Implement this
-		return 0;
+		return Id;
 	}
 	
 	/**
      * Retrieves the address of the customer.  
      */
 	public String getAddress() {
-		// TODO Implement this
-		return null;
+		return address;
 	}
 	
 	/**
      * Retrieves the distance of the customer from the store.  
      */
 	public int getDistance() {
-		// TODO Implement this
-		return 0;
+		return distance;
 	}
 
 	
@@ -49,8 +62,7 @@ public class Customer {
      * @return A list of receipts.
      */
 	public List<OrderReceipt> getCustomerReceiptList() {
-		// TODO Implement this
-		return null;
+		return orderReceipts;
 	}
 	
 	/**
@@ -59,16 +71,22 @@ public class Customer {
      * @return Amount of money left.   
      */
 	public int getAvailableCreditAmount() {
-		// TODO Implement this
-		return 0;
+		return creditAmount;
 	}
 	
 	/**
      * Retrieves this customers credit card serial number.    
      */
 	public int getCreditNumber() {
-		// TODO Implement this
-		return 0;
+		return creditNumber;
+	}
+
+	// decreases amount by num and returns the current updated amount in credit card.
+	public int decreaseAmountBy(int num) {
+		//synchronized (this) {
+			this.creditAmount = creditAmount - num;
+			return creditAmount;
+		//}
 	}
 	
 }

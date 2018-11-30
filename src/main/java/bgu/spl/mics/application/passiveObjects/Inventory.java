@@ -2,6 +2,8 @@ package bgu.spl.mics.application.passiveObjects;
 
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,7 +20,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * GUIDELINE: ONLY INVENTORY TOUCHES THE INSTANCES OF THE BookInventoryInfo!
  */
 
-//SHACHAR - hopefully this is done.
+/* 30.11.2018
+everything works correctly ans is thread-safe.
+ */
 public class Inventory {
 
 	private ConcurrentHashMap<String,BookInventoryInfo> myInventory;
@@ -135,21 +139,15 @@ public class Inventory {
 	 */
 	public void printInventoryToFile(String filename){
 
-		ConcurrentHashMap<String, BookInventoryInfo> clonedInventory = cloneInventory();
+		ConcurrentHashMap<String, Integer> clonedInventory = cloneInventory();
 		Gson gson = new Gson();
 
 
 		try {
 			FileWriter writer = new FileWriter(filename);
-			// creating the objetcs to push to the file and pushing them.
-			for (int i=0; i < clonedInventory.size(); i++) {
-				Object[] book = new Object[2];
-				book[0] = bookNamesList[i];
-				book[1] = clonedInventory.get(bookNamesList[i]).getAmountInInventory();
-				String json = gson.toJson(book);
-				System.out.println(json);
-				writer.write(json);
-			}
+			String json = gson.toJson(clonedInventory);
+			//System.out.println(json);
+			writer.write(json);
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -158,10 +156,10 @@ public class Inventory {
 	}
 
 	// this function created a copy of myInventory.
-	private synchronized ConcurrentHashMap<String, BookInventoryInfo> cloneInventory() { // synchronized on _this_, e.g. on Inventory
-		ConcurrentHashMap<String, BookInventoryInfo> clonedInventory = new ConcurrentHashMap<>();
+	private synchronized ConcurrentHashMap<String, Integer> cloneInventory() { // synchronized on _this_, e.g. on Inventory
+		ConcurrentHashMap<String, Integer> clonedInventory = new ConcurrentHashMap<>();
 		for (int i = 0; i < myInventory.size(); i++) {
-			clonedInventory.put(bookNamesList[i], myInventory.get(bookNamesList[i]).cloneBook());
+			clonedInventory.put(bookNamesList[i], myInventory.get(bookNamesList[i]).getAmountInInventory());
 		}
 		return clonedInventory;
 	}
