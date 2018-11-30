@@ -10,7 +10,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 ///AMIR
-
+/*
 public class MessageBusImplTest implements MessageBus {
     private MessageBusImpl Bus;
     private Vector<Queue> listOfQueues;
@@ -69,3 +69,4 @@ public class MessageBusImplTest implements MessageBus {
     public void tearDown() throws Exception {
     }
 }
+*/

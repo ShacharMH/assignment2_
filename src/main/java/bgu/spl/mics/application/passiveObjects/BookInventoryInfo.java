@@ -15,7 +15,7 @@ public class BookInventoryInfo {
 
 	private String title;
 	private int price;
-	private int amount;
+	private volatile int amount;
 
 	//constructor:
 	public BookInventoryInfo(String title, int price, int amount) {
@@ -58,14 +58,16 @@ public class BookInventoryInfo {
 
 	/* reflections on thread-safety: initialization of this object happens only once, so I don't mind the constructor
 	not being thread-safe. BUT, when a book gets sold, then the amount should decrease by 1, and that function may be activate
-	simultaneously by a number of threads. hence it's synchronized. on the other hand's other hand, there must be a (more) efficient
-	way for synchronizing without blocking the other threads.
+	simultaneously by a number of threads - this is not true, because of the implementation of _public int checkAvailabiltyAndGetPrice(String book) {
+	in _Inventory_, which is synchronized on the book it deals with, hence calling this function not concurrently for each book.
 	*/
 	public synchronized void decreaseAmount() {
 		amount--;
 	}
-	
-	
+
+	public BookInventoryInfo cloneBook() {
+		return new BookInventoryInfo(getBookTitle(),getPrice(),getAmountInInventory());
+	}
 
 	
 }

@@ -1,7 +1,9 @@
 package bgu.spl.mics.application.passiveObjects;
 
 
-import java.awt.print.Book;
+import com.google.gson.Gson;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -16,10 +18,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * GUIDELINE: ONLY INVENTORY TOUCHES THE INSTANCES OF THE BookInventoryInfo!
  */
 
-//SHACHAR
+//SHACHAR - hopefully this is done.
 public class Inventory {
 
 	private ConcurrentHashMap<String,BookInventoryInfo> myInventory;
+	private String[] bookNamesList;
 	private boolean isLoaded = false;
 
 	/* this tiny class helps us achieve lazy initialization (so we don't get an instance the second we import this class.
@@ -49,9 +52,15 @@ public class Inventory {
      */
 
 	//should be thread safe. only one thread initializes it.
-	public void load (BookInventoryInfo[ ] inventory ) {
+	public void load (BookInventoryInfo[] inventory ) {
+		int i = 0;
 		for (BookInventoryInfo book: inventory) {
 			myInventory.put(book.getBookTitle(), book);
+			i++;
+		}
+		bookNamesList = new String[i];
+		for (int j = 0; j < i; j++) {
+			bookNamesList[j] = inventory[j].getBookTitle();
 		}
 		isLoaded = true;
 	}
@@ -64,21 +73,18 @@ public class Inventory {
      * 			The first should not change the state of the inventory while the 
      * 			second should reduce by one the number of books of the desired type.
      */
-	/* should be thread safe.
-	if(checkAvailabiltyAndGetPrice) > 0 { -> means the book in in inventory.
-	take(book)
-	book.decreaseamount();
-	 -> should be synchronized.
-	 2. lock only on the certain book.
-	 Things to notice:
-	 a. I still need to check the invariants are true after _take_ calls _checkAvailabiltyAndGetPrice_.
-	 */
 
+	/* hopefully this is thread-safe:
+	1. is synchronized on the relevant book
+	2. the answer returned from  _checkAvailabiltyAndGetPrice(book)_ is saved on the thread's stack so
+	   other threads can't touch it: https://www.youtube.com/watch?v=otCpCn0l4Wo
+	 */
 	public OrderResult take (String book) {
 		synchronized ((myInventory.get(book))) {
 			if (isLoaded) {
-				if (checkAvailabiltyAndGetPrice(book) > 0) {
-					// what do I do if another thread gets involved with __checkAvailabiltyAndGetPrice__ and then it's no longer true?
+				int result = checkAvailabiltyAndGetPrice(book);
+				if (result > 0) {
+					myInventory.get(book).decreaseAmount();
 					return OrderResult.SUCCESSFULLY_TAKEN;
 				}
 				else {
@@ -98,9 +104,21 @@ public class Inventory {
      * @param book 		Name of the book.
      * @return the price of the book if it is available, -1 otherwise.
      */
+
+	/* hopefully this is thread-safe:
+	1. only one thread can touch one book at a time
+	2. doesn't change any object
+	 */
 	public int checkAvailabiltyAndGetPrice(String book) {
-		//TODO: Implement this
-		return -1;
+		synchronized (myInventory.get(book)) {
+			BookInventoryInfo tmpbook = myInventory.get(book); // this is a pointer
+			if (tmpbook.getAmountInInventory() > 0){
+				return tmpbook.getPrice();
+			}
+			else {
+				return -1;
+			}
+		}
 	}
 	
 	/**
@@ -111,7 +129,38 @@ public class Inventory {
      * their respective available amount in the inventory. 
      * This method is called by the main method in order to generate the output.
      */
+
+	/* this function is unsynchronized!
+	It calls a synchronized clone() function that creates a copy of _myInventory_ and then works on the said copy.
+	 */
 	public void printInventoryToFile(String filename){
-		//TODO: Implement this
+
+		ConcurrentHashMap<String, BookInventoryInfo> clonedInventory = cloneInventory();
+		Gson gson = new Gson();
+
+
+		try {
+			FileWriter writer = new FileWriter(filename);
+			// creating the objetcs to push to the file and pushing them.
+			for (int i=0; i < clonedInventory.size(); i++) {
+				Object[] book = new Object[2];
+				book[0] = bookNamesList[i];
+				book[1] = clonedInventory.get(bookNamesList[i]).getAmountInInventory();
+				writer.write(gson.toJson(book));
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	}
+
+	// this function created a copy of myInventory.
+	private synchronized ConcurrentHashMap<String, BookInventoryInfo> cloneInventory() { // synchronized on _this_, e.g. on Inventory
+		ConcurrentHashMap<String, BookInventoryInfo> clonedInventory = new ConcurrentHashMap<>();
+		for (int i = 0; i < myInventory.size(); i++) {
+			clonedInventory.put(bookNamesList[i], myInventory.get(bookNamesList[i]).cloneBook());
+		}
+		return clonedInventory;
+	}
+
 }

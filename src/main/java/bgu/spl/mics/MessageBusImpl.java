@@ -99,7 +99,8 @@ public class MessageBusImpl implements MessageBus {
         Queue<MicroService> QueueOfEvent = hashEventToMicroServiceQueue.get(e);//get the queue assigned to this type of event
         BlockingQueue<Message> QueueOfMicroservice=hashMicroServiceToMessagesQueue.get(QueueOfEvent.element());//get the message queue of the corresponding micro-service
 		QueueOfMicroservice.add(e);
-        return complete(e, e);///I am here
+       // return complete(e, e);///I am here
+		return null;
 	}
 
 	@Override
