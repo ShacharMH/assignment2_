@@ -7,7 +7,6 @@ package bgu.spl.mics.application.passiveObjects;
  * You may add ONLY private fields and methods to this class.
  */
 
-//the current implementation is NOT thread-safe!!!
 public class DeliveryVehicle {
 
 	private int lisence;
@@ -43,9 +42,12 @@ public class DeliveryVehicle {
      * @param distance	The distance from the store to the customer.
      */
 	public void deliver(String address, int distance) {
-		int time = distance/getSpeed();
-		try {
-			Thread.sleep(time);
-		} catch (InterruptedException e) {}
+		synchronized (this) {
+			int time = distance / getSpeed();
+			try {
+				Thread.sleep(time);
+			} catch (InterruptedException e) {
+			}
+		}
 	}
 }

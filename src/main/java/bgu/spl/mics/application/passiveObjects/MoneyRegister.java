@@ -1,6 +1,12 @@
 package bgu.spl.mics.application.passiveObjects;
 
 
+import com.google.gson.Gson;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Passive object representing the store finance management. 
@@ -11,14 +17,28 @@ package bgu.spl.mics.application.passiveObjects;
  * <p>
  * You can add ONLY private fields and methods to this class as you see fit.
  */
+
+//SHACHAR
 public class MoneyRegister {
-	
+
+	private List<OrderReceipt> issuedReceipts;
+	private volatile int total;
+
+
+	private static class MoneyRegisterHolder {
+		private static MoneyRegister instance = new MoneyRegister();
+	}
+
+	private MoneyRegister() {
+		issuedReceipts = new CopyOnWriteArrayList<>(); // is a thread-safe impl. of List<> interface.
+		total = 0;
+	}
+
 	/**
      * Retrieves the single instance of this class.
      */
 	public static MoneyRegister getInstance() {
-		//TODO: Implement this
-		return null;
+		return MoneyRegisterHolder.instance;
 	}
 	
 	/**
@@ -27,15 +47,16 @@ public class MoneyRegister {
      * @param r		The receipt to save in the money register.
      */
 	public void file (OrderReceipt r) {
-		//TODO: Implement this.
+		if (r == null)
+			return;
+		issuedReceipts.add(r);
 	}
 	
 	/**
      * Retrieves the current total earnings of the store.  
      */
 	public int getTotalEarnings() {
-		//TODO: Implement this
-		return 0;
+		return total;
 	}
 	
 	/**
@@ -43,8 +64,15 @@ public class MoneyRegister {
      * <p>
      * @param amount 	amount to charge
      */
+
+	// the check of whether the customer has enough money will be done by SellingService,
 	public void chargeCreditCard(Customer c, int amount) {
-		// TODO Implement this
+		synchronized (c) {
+			int left = c.decreaseAmountBy(amount);
+			System.out.println("customer " + c.getName() + " has " + left + " left in his credit card");
+			total = total + amount;
+
+		}
 	}
 	
 	/**
@@ -53,6 +81,26 @@ public class MoneyRegister {
      * This method is called by the main method in order to generate the output.. 
      */
 	public void printOrderReceipts(String filename) {
-		//TODO: Implement this
+		List<OrderReceipt> clonedMoneyRegister = cloneMoneyRegister();
+		Gson gson = new Gson();
+
+		try {
+			FileWriter writer = new FileWriter(filename);
+			String json = gson.toJson(clonedMoneyRegister);
+			writer.write(json);
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private synchronized List<OrderReceipt> cloneMoneyRegister() {
+		List<OrderReceipt> clonedMoneyRegister = new ArrayList<>();
+		for (OrderReceipt order: issuedReceipts) {
+			clonedMoneyRegister.add(new OrderReceipt(order.getOrderId(),order.getSeller(),order.getCustomerId(),
+													 order.getBookTitle(), order.getPrice(), order.getOrderTick(),
+													 order.getProcessTick(), order.getIssuedTick()));
+		}
+		return clonedMoneyRegister;
 	}
 }

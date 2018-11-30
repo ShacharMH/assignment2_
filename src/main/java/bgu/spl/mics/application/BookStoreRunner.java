@@ -33,8 +33,9 @@ public class BookStoreRunner implements Serializable {
             //FileInputStream fileIn = new FileInputStream("input.json");
             //ObjectInputStream objIn = new ObjectInputStream(fileIn);
             Gson gson = new Gson();
-            JsonParser jsonParser = new JsonParser();
+            //JsonParser jsonParser = new JsonParser();
             Reader reader = new InputStreamReader(new FileInputStream("input.json"), StandardCharsets.UTF_8);
+            JsonObject jsonObject = new JsonObject();
             //BookInventoryInfo bookInventoryInfo = gson.fromJson(reader, BookInventoryInfo.class);
             //System.out.println(bookInventoryInfo.getBookTitle());
 
