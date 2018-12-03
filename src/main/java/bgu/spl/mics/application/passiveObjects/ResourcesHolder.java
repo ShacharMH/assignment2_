@@ -1,6 +1,13 @@
 package bgu.spl.mics.application.passiveObjects;
 
 import bgu.spl.mics.Future;
+import javafx.util.Pair;
+
+import java.util.List;
+import java.util.PriorityQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Passive object representing the resource manager.
@@ -11,14 +18,23 @@ import bgu.spl.mics.Future;
  * <p>
  * You can add ONLY private methods and fields to this class.
  */
+//Amir
+//There is a fixed amount of cars-supplied in the json file input.
 public class ResourcesHolder {
-	
+	private BlockingQueue<DeliveryVehicle> listOfCars;
+
+
+private static class HolderOfResourceHolder{
+	private static ResourcesHolder List=new ResourcesHolder();
+}
+	private ResourcesHolder(){
+		//listOfCars=inputFromJsonFile
+	}
 	/**
      * Retrieves the single instance of this class.
      */
 	public static ResourcesHolder getInstance() {
-		//TODO: Implement this
-		return null;
+		return HolderOfResourceHolder.List;
 	}
 	
 	/**
@@ -29,8 +45,15 @@ public class ResourcesHolder {
      * 			{@link DeliveryVehicle} when completed.   
      */
 	public Future<DeliveryVehicle> acquireVehicle() {
-		//TODO: Implement this
-		return null;
+			DeliveryVehicle result=null;
+			try {
+				result = listOfCars.take();//get a vehicle from queue
+			}
+			catch (InterruptedException e){}
+			Future<DeliveryVehicle> ans=new Future<>();
+			ans.resolve(result);
+			return ans;
+
 	}
 	
 	/**
@@ -40,7 +63,7 @@ public class ResourcesHolder {
      * @param vehicle	{@link DeliveryVehicle} to be released.
      */
 	public void releaseVehicle(DeliveryVehicle vehicle) {
-		//TODO: Implement this
+		listOfCars.add(vehicle);
 	}
 	
 	/**
@@ -49,7 +72,8 @@ public class ResourcesHolder {
      * @param vehicles	Array of {@link DeliveryVehicle} instances to store.
      */
 	public void load(DeliveryVehicle[] vehicles) {
-		//TODO: Implement this
-	}
+		for (DeliveryVehicle v:vehicles){
+			listOfCars.add(v);
+	}}
 
 }
