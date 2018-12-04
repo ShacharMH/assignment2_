@@ -5,6 +5,7 @@ import javafx.util.Pair;
 
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -21,14 +22,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 //Amir
 //There is a fixed amount of cars-supplied in the json file input.
 public class ResourcesHolder {
-	private BlockingQueue<DeliveryVehicle> listOfCars;
+	private final ArrayBlockingQueue<DeliveryVehicle> listOfCars;
 
 
 private static class HolderOfResourceHolder{
 	private static ResourcesHolder List=new ResourcesHolder();
 }
 	private ResourcesHolder(){
-		//listOfCars=inputFromJsonFile
+		listOfCars=new ArrayBlockingQueue<DeliveryVehicle>(1000);//need to change capacity to number of vehicles from input
 	}
 	/**
      * Retrieves the single instance of this class.
@@ -49,7 +50,9 @@ private static class HolderOfResourceHolder{
 			try {
 				result = listOfCars.take();//get a vehicle from queue
 			}
-			catch (InterruptedException e){}
+			catch (InterruptedException e){
+				System.out.println("Interupted in aquiring a vehicle");
+			}
 			Future<DeliveryVehicle> ans=new Future<>();
 			ans.resolve(result);
 			return ans;
