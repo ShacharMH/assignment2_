@@ -2,6 +2,7 @@ package bgu.spl.mics.application.passiveObjects;
 
 
 import com.google.gson.Gson;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,8 +22,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 //SHACHAR
 public class MoneyRegister {
 
-	private List<OrderReceipt> issuedReceipts;
-	private volatile int total;
+	public List<OrderReceipt> issuedReceipts; // change again to PRIVATE after done testing!!!!
+	private List<Integer> orderIdList = new ArrayList<>();
+	public volatile int total; // ditto!!!!!!!!!
 
 
 	private static class MoneyRegisterHolder {
@@ -46,10 +48,15 @@ public class MoneyRegister {
      * <p>   
      * @param r		The receipt to save in the money register.
      */
+
+	// need not be synchronized
 	public void file (OrderReceipt r) {
-		if (r == null)
-			return;
-		issuedReceipts.add(r);
+			if (r == null)
+				return;
+			if (orderIdList.contains(r.getOrderId()))
+				throw new IllegalArgumentException("there's already a filed receipt with this Id: " + r.getOrderId());
+			issuedReceipts.add(r);
+			orderIdList.add(r.getOrderId());
 	}
 	
 	/**
@@ -65,13 +72,13 @@ public class MoneyRegister {
      * @param amount 	amount to charge
      */
 
-	// the check of whether the customer has enough money will be done by SellingService,
 	public void chargeCreditCard(Customer c, int amount) {
 		synchronized (c) {
+			if (c.getAvailableCreditAmount() < amount)
+				throw new IllegalArgumentException("not enough money in credit card of " + c.getName());
 			int left = c.decreaseAmountBy(amount);
-			System.out.println("customer " + c.getName() + " has " + left + " left in his credit card");
+			//System.out.println("customer " + c.getName() + " has " + left + " left in his credit card");
 			total = total + amount;
-
 		}
 	}
 	

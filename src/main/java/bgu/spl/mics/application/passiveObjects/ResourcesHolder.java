@@ -1,7 +1,7 @@
 package bgu.spl.mics.application.passiveObjects;
 
 import bgu.spl.mics.Future;
-import javafx.util.Pair;
+//import javafx.util.Pair;
 
 import java.util.List;
 import java.util.PriorityQueue;
