@@ -87,12 +87,12 @@ public class InventoryTest {
     public void take2Threads() {
 
         Runnable runnable1 = () -> {
-            /*try {
+            try {
                 Thread.sleep(30);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            */
+            
             System.out.println("thread 1 runs quite fine");
             System.out.println("thread 1 says: I tried to take Santa: " + inventory.take(this.santana));
             System.out.println("thread 1 says: I tried to take Queen: " + inventory.take(this.queen));

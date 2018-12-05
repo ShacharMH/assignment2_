@@ -4,6 +4,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.omg.CORBA.Object;
+
 import  java.lang.Thread;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +29,7 @@ public class testFutureClassTest extends Future {
     }
 
     @Test public void testGet_resultalreadyresolved() {
-    // i expect from this function to give the result at all costs: if it's already there - then get it. if not - wait until it's there and get it.
+        // i expect from this function to give the result at all costs: if it's already there - then get it. if not - wait until it's there and get it.
         future.resolve(3);
         // now, the value "3" need to be in the field "result".
         int result = future.get();
@@ -101,7 +103,7 @@ public class testFutureClassTest extends Future {
     }
 
     @Test public void testGetTimeout_resultisresolvedpriortomaxtime() {
-        int result = future.get(2, TimeUnit.SECONDS);
+        int result = future.get(2, TimeUnit.SECONDS);//changed result from an int to an object due to compilation issues
         future.resolve(42);
         // should get to the next line with _42_ in _result_
         assertEquals(42, result);
@@ -110,7 +112,7 @@ public class testFutureClassTest extends Future {
 
     @Test public void testGetTimeout_resultisnotresolved() {
         Calendar start = Calendar.getInstance();
-        int result = future.get(2, TimeUnit.SECONDS);
+        int result = future.get(2, TimeUnit.SECONDS);//changed result from an int to an object due to compilation issues
         Calendar end = Calendar.getInstance();
         // should get to the next line with _null_ in _result_
         assertEquals(null, result);
