@@ -41,7 +41,7 @@ public class MessageBusImplTest {
         Thread T1;
         Thread T2;
         Thread T3;
-    }
+    }//
 
     @After
 
