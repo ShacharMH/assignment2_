@@ -1,5 +1,6 @@
 package bgu.spl.mics.application.passiveObjects;
 
+import java.lang.reflect.Array;
 import java.util.List;
 
 /**
@@ -16,13 +17,14 @@ public class Customer {
 	private int distance;
 	private volatile int creditAmount;
 	private int creditNumber;
-	private List<OrderReceipt> orderReceipts;
+	private OrderReceipt[] orderReceipts;
 
 
-	public Customer(String name, int Id, String address, int distance, int creditAmount, int creditNumber, List<OrderReceipt> orderReceipts) {
+	public Customer(String name, int Id, String address, int distance, int creditAmount, int creditNumber, OrderReceipt[] orderReceipts) {
 		this.name = name;
 		this.Id = Id;
 		this.address = address;
+		this.distance=distance;
 		this.creditAmount = creditAmount;
 		this.creditNumber = creditNumber;
 		this.orderReceipts = orderReceipts;
@@ -57,11 +59,11 @@ public class Customer {
 
 	
 	/**
-     * Retrieves a list of receipts for the purchases this customer has made.
+     * Retrieves an Array of receipts for the purchases this customer has made.
      * <p>
-     * @return A list of receipts.
+     * @return An Array of receipts.
      */
-	public List<OrderReceipt> getCustomerReceiptList() {
+	public OrderReceipt[] getCustomerReceiptList() {
 		return orderReceipts;
 	}
 	
@@ -88,5 +90,9 @@ public class Customer {
 			return creditAmount;
 		//}
 	}
-	
+
+
+	public String toString(){
+		return name+" id is"+ Id+" distance is"+distance +" "+address+" ,credit amount "+creditAmount+" ,credit number is "+creditNumber+orderReceipts[0].getBookTitle();
+	}
 }

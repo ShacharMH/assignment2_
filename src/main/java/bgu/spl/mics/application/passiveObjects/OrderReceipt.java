@@ -21,13 +21,13 @@ public class OrderReceipt {
 	public OrderReceipt(int orderId, String Seller, int customerId, String title,
 						int price, int orderTick, int proccessTick, int issuedTick) {
 		this.orderId = orderId;
-		this.Seller = Seller;
+		this.Seller = Seller;//Unknown when constructed, defaulted as " ".
 		this.customerId = customerId;
 		this.title = title;
 		this.price = price;
 		this.orderTick = orderTick;
-		this.proccessTick = proccessTick;
-		this.issuedTick = issuedTick;
+		this.proccessTick = proccessTick;//Unknown when constructed, defaulted as 0.
+		this.issuedTick = issuedTick;//Unknown when constructed, defaulted as 0.
 	}
 	
 	/**

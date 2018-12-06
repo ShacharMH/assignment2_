@@ -29,7 +29,7 @@ public class MoneyRegisterTest {
         orderReceipts.add(order1a);
         orderReceipts.add(order1b);
         orderReceipts.add(order1c);
-        SlumberWhich_HaveSomeStuff = new Customer("SlumberWhich HaveSomeStuff", 123456, "somewhere", 3, 20, 123, orderReceipts);
+       // SlumberWhich_HaveSomeStuff = new Customer("SlumberWhich HaveSomeStuff", 123456, "somewhere", 3, 20, 123, orderReceipts);
 
         instance = MoneyRegister.getInstance();
     }

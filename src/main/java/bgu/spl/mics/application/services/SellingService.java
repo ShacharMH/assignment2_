@@ -14,8 +14,8 @@ import bgu.spl.mics.MicroService;
  */
 public class SellingService extends MicroService{
 
-	public SellingService() {
-		super("Change_This_Name");
+	public SellingService(String name) {
+		super(name);
 		// TODO Implement this
 	}
 
