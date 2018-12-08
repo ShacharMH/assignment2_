@@ -1,6 +1,7 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.DeliveryEvent;
 
 /**
  * Logistic service in charge of delivering books that have been purchased to customers.
@@ -14,13 +15,17 @@ import bgu.spl.mics.MicroService;
 public class LogisticsService extends MicroService {
 
 	public LogisticsService() {
-		super("Change_This_Name");
-		// TODO Implement this
+		super("LogisticsService");
 	}
 
 	@Override
 	protected void initialize() {
-		// TODO Implement this
+		subscribeEvent(DeliveryEvent.class, DeliveryEventCallback -> {
+			// we should just wait the amount of time it takes to deliver the book to the customer.
+			String address = DeliveryEventCallback.getAddress();
+			int distance = DeliveryEventCallback.getDistance();
+			DeliveryEventCallback.getDeliveryVehicle().deliver(address,distance);
+		});
 		
 	}
 

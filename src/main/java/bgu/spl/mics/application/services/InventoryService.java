@@ -42,7 +42,7 @@ public class InventoryService extends MicroService{
 				OrderResult orderResult = inventory.take(bookName); // we try to take it
 				if (orderResult == OrderResult.SUCCESSFULLY_TAKEN)
 					complete(CheckAvailabilityCallback, price); // we successfully took it!
-				else // book not in stock anymore
+				else // book not in stock anymore :(
 					complete(CheckAvailabilityCallback,-1);
 				}
 		});

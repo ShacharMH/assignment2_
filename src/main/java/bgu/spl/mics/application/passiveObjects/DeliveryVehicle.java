@@ -9,20 +9,20 @@ package bgu.spl.mics.application.passiveObjects;
 
 public class DeliveryVehicle {
 
-	private int lisence;
+	private int licence;
 	private int speed;
 	/**
      * Constructor.   
      */
 	 public DeliveryVehicle(int license, int speed) {
-		this.lisence = license;
+		this.licence = license;
 		this.speed = speed;
 	  }
 	/**
      * Retrieves the license of this delivery vehicle.   
      */
 	public int getLicense() {
-		return lisence;
+		return licence;
 	}
 	
 	/**
