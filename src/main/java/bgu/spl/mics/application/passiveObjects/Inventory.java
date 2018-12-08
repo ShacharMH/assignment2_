@@ -109,19 +109,16 @@ public class Inventory {
      * @return the price of the book if it is available, -1 otherwise.
      */
 
-	/* this is thread-safe:
-	1. only one thread can touch one book at a time
-	2. doesn't change any object
+	/* this shouldn't be thread-safe:
+	1. doesn't change any object
 	 */
 	public int checkAvailabiltyAndGetPrice(String book) {
-		synchronized (myInventory.get(book)) {
-			BookInventoryInfo tmpbook = myInventory.get(book); // this is a pointer
-			if (tmpbook.getAmountInInventory() > 0){
-				return tmpbook.getPrice();
-			}
-			else {
-				return -1;
-			}
+		BookInventoryInfo tmpbook = myInventory.get(book);
+		if (tmpbook.getAmountInInventory() > 0){
+			return tmpbook.getPrice();
+		}
+		else {
+			return -1;
 		}
 	}
 	

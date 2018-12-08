@@ -1,10 +1,8 @@
 package bgu.spl.mics;
 
-//import jdk.internal.util.xml.impl.Pair;
 
 import java.util.HashMap;
-import java.util.Map;
-import bgu.spl.mics.MessageBus;
+
 
 /**
  * The MicroService is an abstract class that any micro-service in the system
@@ -185,18 +183,14 @@ public abstract class MicroService implements Runnable {
                 Callback callback = eventMap.get(event);
                 if (callback == null)
                     throw new NullPointerException("callback is null, e.g. there's no entry of event of class " + event.getClass() + ".");
-                else
-                    callback.call(this);
+                callback.call(this);
             } else {
                 Broadcast broadcast = (Broadcast)message;
                 Callback callback = broadcastMap.get(broadcast);
                 if (callback == null)
                     throw new NullPointerException("callback is null, e.g. there's no entry of event of class " + broadcast.getClass() + ".");
-                else
-                    callback.call(this);
+                callback.call(this);
             }
-
-            //System.out.println("NOT IMPLEMENTED!!!"); //TODO: you should delete this line :)
         }
     }
 

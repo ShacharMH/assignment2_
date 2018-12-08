@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 //Amir
 //There is a fixed amount of cars-supplied in the json file input.
 public class ResourcesHolder {
-	private final ArrayBlockingQueue<DeliveryVehicle> listOfCars;
+	private final BlockingQueue<DeliveryVehicle> listOfCars;
 
 
 private static class HolderOfResourceHolder{
@@ -51,7 +51,7 @@ private static class HolderOfResourceHolder{
 				result = listOfCars.take();//get a vehicle from queue
 			}
 			catch (InterruptedException e){
-				System.out.println("Interupted in aquiring a vehicle");
+				System.out.println("Interupted in acquiring a vehicle");
 			}
 			Future<DeliveryVehicle> ans=new Future<>();
 			ans.resolve(result);
@@ -77,6 +77,7 @@ private static class HolderOfResourceHolder{
 	public void load(DeliveryVehicle[] vehicles) {
 		for (DeliveryVehicle v:vehicles){
 			listOfCars.add(v);
-	}}
+		}
+	}
 
 }

@@ -22,9 +22,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 //SHACHAR
 public class MoneyRegister {
 
-	public List<OrderReceipt> issuedReceipts; // change again to PRIVATE after done testing!!!!
+	private  List<OrderReceipt> issuedReceipts;
 	private List<Integer> orderIdList = new ArrayList<>();
-	public volatile int total; // ditto!!!!!!!!!
+	private volatile int total;
 
 
 	private static class MoneyRegisterHolder {
