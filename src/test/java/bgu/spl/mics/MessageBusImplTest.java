@@ -17,14 +17,15 @@ import static org.junit.Assert.*;
 public class MessageBusImplTest {
     //for the tests i'll need microservices,events,broadcasts and a couple of threads.
     private MessageBusImpl bus = null;
-    MicroService ExampleService;
-    MicroService ExampleSendService;
-    MicroService BroadcastListenerService;
-    ExampleEvent Delivery;
-    ExampleBroadcast broadcast;
-    Thread T1;
-    Thread T2;
-    Thread T3;
+    private MicroService ExampleService;
+    private MicroService ExampleSendService;
+    private MicroService BroadcastListenerService;
+    private ExampleEvent Delivery;
+    private ExampleBroadcast broadcast;
+    private Thread T1;
+    private Thread T2;
+    private Thread T3;
+    private Thread T4;
 
 
 
@@ -38,9 +39,6 @@ public class MessageBusImplTest {
         BroadcastListenerService =new ExampleBroadcastListenerService("AMIR",a);
         Delivery=new ExampleEvent("lalala");
          broadcast=new ExampleBroadcast("777");
-        Thread T1;
-        Thread T2;
-        Thread T3;
     }//
 
     @After
@@ -56,21 +54,29 @@ public class MessageBusImplTest {
     @Test
     public void subscribeEvent() {//you subscribe to an event of a certain type
         bus.subscribeEvent(ExampleEvent.class,ExampleService);
+        MicroService m=bus.getMicroServiceOfEvent(ExampleEvent.class);
+        assertEquals(ExampleService,m);
     }
 
 
     @Test
     public void subscribeBroadcast() {
-        bus.subscribeBroadcast(ExampleBroadcast.class,ExampleSendService);
+        bus.subscribeBroadcast(ExampleBroadcast.class, ExampleService);
+        MicroService m=bus.getMicroServiceOfBroadcast(ExampleBroadcast.class);
+        assertEquals(ExampleService,m);
+
     }
+
 
     @Test
     public void complete() {//complete for a specific event
         bus.register(ExampleService);
         bus.subscribeEvent(ExampleEvent.class,ExampleService);
-       // bus.sendEvent(Delivery);
+        bus.sendEvent(Delivery);
         String A="DFFF";
         bus.complete(Delivery,A);
+        Future f=bus.returnFutureOfEvent(Delivery);
+        assertEquals(A,f.getResult());
     }
 
     @Test
@@ -80,6 +86,13 @@ public class MessageBusImplTest {
         bus.register(ExampleSendService);
         bus.subscribeBroadcast(ExampleBroadcast.class,ExampleService);
         bus.sendBroadcast(broadcast);
+        Message a=null;
+        try {
+            a = bus.awaitMessage(ExampleService);
+        }
+        catch (InterruptedException e){}
+        assertEquals(broadcast,a);
+
     }
 
     @Test
@@ -88,18 +101,33 @@ public class MessageBusImplTest {
         bus.register(ExampleService);
         bus.subscribeEvent(ExampleEvent.class,ExampleService);
        // bus.subscribeEvent(ExampleEvent.class,ExampleSendService);
-       // bus.sendEvent(Delivery);
+        bus.sendEvent(Delivery);
+        Message a=null;
+      try {
+             a = bus.awaitMessage(ExampleService);
+        }
+        catch (InterruptedException e){};
+        assertEquals(Delivery,a);
+
+
     }
 
     @Test
-    public void register() {
+    public void register() {//works
         bus.register(ExampleSendService);
         bus.register(ExampleService);
     }
 
     @Test
-    public void unregister() {
+    public void unregister() {//works
+        bus.register(ExampleService);
         bus.unregister(ExampleService);
+        try {
+            Message m=bus.awaitMessage(ExampleService);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        catch (IllegalStateException e){ System.out.println("unregister test works");}
     }
 
     @Test
@@ -107,34 +135,43 @@ public class MessageBusImplTest {
         bus.register(ExampleService);
         bus.register(ExampleSendService);
         bus.subscribeEvent(ExampleEvent.class, ExampleService);
-       // bus.subscribeEvent(ExampleEvent.class,ExampleSendService);
-       // bus.sendEvent(Delivery);
+        bus.sendEvent(Delivery);
         ExampleEvent D1=new ExampleEvent("EVENT1");
         ExampleEvent D2=new ExampleEvent("EVENT2");
-        //bus.sendEvent(D1);
-       // bus.sendEvent(D2);
-        Runnable runnable2=()-> {
-            try {
-                Message get = bus.awaitMessage(ExampleService);//name of service is broadcast
-                if (get!=null) System.out.println("awaitmessage returns not null");
-                if (get==null) System.out.println("awaitmessage returns null");
-            } catch (InterruptedException e) {
-                System.out.println("awaiting interupted");
-            }
-        };
+        bus.sendEvent(D1);
+        bus.sendEvent(D2);
+        try {
+            Message get2 = bus.awaitMessage(ExampleService);
+            if (get2==Delivery) System.out.println("awaitmessage11 returns Delivery");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         Runnable runnable1 = () -> {
             try {
-                Message get2 = bus.awaitMessage(ExampleSendService);//name of service is AMIR
-                if (get2!=null) System.out.println("awaitmessage2 returns not null");
-                if (get2==null) System.out.println("awaitmessage returns null");
+                Message get2 = bus.awaitMessage(ExampleService);//name of service is AMIR
+                if (get2==Delivery) System.out.println("awaitmessage3 returns Delivery");
+                if (get2==D1) System.out.println("awaitmessage3 returns D1");
+                if (get2==D2) System.out.println("awaitmessage3 returns D2");
             }
             catch (InterruptedException e){
                 System.out.println("awaiting interupted");
             }
         };
+        Runnable runnable2 = () -> {
+            try {
+                Message get2 = bus.awaitMessage(ExampleService);//name of service is AMIR
+                if (get2==Delivery) System.out.println("awaitmessage2 returns Delivery");
+                if (get2==D1) System.out.println("awaitmessage2 returns D1");
+                if (get2==D2) System.out.println("awaitmessage2 returns D2");
+            }
+            catch (InterruptedException e){
+                System.out.println("awaiting interupted");
+            }
+        };
+        T2=new Thread(runnable2);
         T1 = new Thread(runnable1);
-        T2= new Thread(runnable2);
-        T1.start();
         T2.start();
+        T1.start();
+
     }
 }

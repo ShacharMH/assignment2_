@@ -37,8 +37,8 @@ public class MoneyRegisterTest {
     @After
     public void tearDown() throws Exception {
 
-        instance.total = 0;
-        instance.issuedReceipts.clear();
+        instance.setTotal(0);//changed from private field(total) to avoid compilation problems
+        instance.clearIssuedReciepts();//changed from private field (issued reciepts) to avoid compilation problems
         instance = null;
 
         order1a = null;
@@ -53,7 +53,7 @@ public class MoneyRegisterTest {
     @Test
     public void chargeCreditCard() {
 
-        assertEquals(0, instance.total);
+        assertEquals(0, instance.getTotalEarnings());//changed from "total"(private field) to "get total earnings" (public method)
         instance.chargeCreditCard(SlumberWhich_HaveSomeStuff, order1a.getPrice());
         assertTrue(SlumberWhich_HaveSomeStuff.getAvailableCreditAmount() == 10);
         assertEquals(10, instance.getTotalEarnings());

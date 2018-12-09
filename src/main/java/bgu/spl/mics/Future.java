@@ -33,13 +33,13 @@ public class Future<T> {
      * @return return the result of type T if it is available, if not wait until it is available.
      * 	       
      */
-	public T get() {
+	public synchronized T get() {
 		if (result!=null) return result;
 		else{
 			try {
 				while (result == null) this.wait();
 			}
-			catch (InterruptedException e){};
+			catch (InterruptedException e){}
 		}
 		return result;
 
@@ -48,7 +48,7 @@ public class Future<T> {
 	/**
      * Resolves the result of this Future object.
      */
-	public void resolve (T result) {
+	public synchronized void resolve (T result) {
 		resolved=true;
 		this.result=result;
 		this.notifyAll();
@@ -85,6 +85,15 @@ public class Future<T> {
 		return null;
 
 	}
+
+
+
+	//************Methods for tests
+	public T getResult() {
+		return this.result;
+	}
+
+
 
 
 
