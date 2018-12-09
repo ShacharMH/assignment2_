@@ -1,7 +1,6 @@
 package bgu.spl.mics.application.passiveObjects;
 
-import java.lang.reflect.Array;
-import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Passive data-object representing a customer of the store.
@@ -15,9 +14,13 @@ public class Customer {
 	private int Id;
 	private String address;
 	private int distance;
-	private volatile int creditAmount;
+	private AtomicInteger creditAmount;
 	private int creditNumber;
 	private OrderReceipt[] orderReceipts;
+
+	//private AtomicInteger reservedAmount = new AtomicInteger(0);
+	//private Object lock = new Object();
+
 
 
 	public Customer(String name, int Id, String address, int distance, int creditAmount, int creditNumber, OrderReceipt[] orderReceipts) {
@@ -25,7 +28,7 @@ public class Customer {
 		this.Id = Id;
 		this.address = address;
 		this.distance=distance;
-		this.creditAmount = creditAmount;
+		this.creditAmount = new AtomicInteger(creditAmount);
 		this.creditNumber = creditNumber;
 		this.orderReceipts = orderReceipts;
 	}
@@ -73,7 +76,7 @@ public class Customer {
      * @return Amount of money left.   
      */
 	public int getAvailableCreditAmount() {
-		return creditAmount;
+		return creditAmount.get();
 	}
 	
 	/**
@@ -85,14 +88,33 @@ public class Customer {
 
 	// decreases amount by num and returns the current updated amount in credit card.
 	public int decreaseAmountBy(int num) {
-		//synchronized (this) {
-			this.creditAmount = creditAmount - num;
-			return creditAmount;
-		//}
+		int currentCreditAmount;
+		int updatedCurrentCreditAmount;
+		do {
+			currentCreditAmount = getAvailableCreditAmount();
+			updatedCurrentCreditAmount = currentCreditAmount + num;
+		} while (!creditAmount.compareAndSet(currentCreditAmount,updatedCurrentCreditAmount));
+		return getAvailableCreditAmount();
 	}
 
 
 	public String toString(){
 		return name+" id is"+ Id+" distance is"+distance +" "+address+" ,credit amount "+creditAmount+" ,credit number is "+creditNumber+orderReceipts[0].getBookTitle();
 	}
+
+	/*
+	public boolean reserveAmount(int amount) {
+
+
+		//add a condition: if amount > credit card amount -> return false;
+
+		int currentReservedAmount;
+		int updatedCurrentReservedAmount;
+		do {
+			currentReservedAmount = reservedAmount.get();
+			updatedCurrentReservedAmount = reservedAmount.get() + amount;
+		} while (!reservedAmount.compareAndSet(currentReservedAmount,updatedCurrentReservedAmount));
+		decreaseAmountBy(amount);
+	}
+	*/
 }
