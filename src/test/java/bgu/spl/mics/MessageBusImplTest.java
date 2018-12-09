@@ -100,10 +100,10 @@ public class MessageBusImplTest {
         setUp();
         bus.register(ExampleService);
         bus.subscribeEvent(ExampleEvent.class,ExampleService);
-       // bus.subscribeEvent(ExampleEvent.class,ExampleSendService);
+        bus.subscribeEvent(ExampleEvent.class,ExampleSendService);
         bus.sendEvent(Delivery);
         Message a=null;
-      try {
+        try {
              a = bus.awaitMessage(ExampleService);
         }
         catch (InterruptedException e){};
@@ -140,12 +140,14 @@ public class MessageBusImplTest {
         ExampleEvent D2=new ExampleEvent("EVENT2");
         bus.sendEvent(D1);
         bus.sendEvent(D2);
-        try {
-            Message get2 = bus.awaitMessage(ExampleService);
-            if (get2==Delivery) System.out.println("awaitmessage11 returns Delivery");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
+            try {
+                Message get2 = bus.awaitMessage(ExampleSendService);
+                if (get2 == null) System.out.println("awaitmessage11 returns shit");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
         Runnable runnable1 = () -> {
             try {
                 Message get2 = bus.awaitMessage(ExampleService);//name of service is AMIR
@@ -170,6 +172,8 @@ public class MessageBusImplTest {
         };
         T2=new Thread(runnable2);
         T1 = new Thread(runnable1);
+        //T3=new Thread(runnable0);
+        //T3.start();
         T2.start();
         T1.start();
 

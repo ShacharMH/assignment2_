@@ -57,13 +57,12 @@ public class MessageBusImpl implements MessageBus {
 
 
     //see if event already exists.  if so, add the ms to the event's queue. else, push the new couple (event, ms), while creating the ms's queue for the event.
-	 public   <T> void subscribeEvent (Class <? extends Event<T>> type, MicroService m) {
+	 public synchronized   <T> void subscribeEvent (Class <? extends Event<T>> type, MicroService m) {
              if (hashEventToMicroServiceQueue.containsKey(type)) {//if event already exists
-                 ConcurrentLinkedQueue<MicroService> EventsMicroServiceList = hashEventToMicroServiceQueue.get(type);//get the queue of microservices for this type of event
-                 EventsMicroServiceList.add(m);//add micro-service to the queue,now this microservice(thread) can handle this event too
+                 hashEventToMicroServiceQueue.get(type).add(m);//get the queue of microservices for this type of event, add MS
              }
              else {
-                 ConcurrentLinkedQueue<MicroService> EventsMicroServiceList = new ConcurrentLinkedQueue<>();//create queue of microservices for this event
+                  ConcurrentLinkedQueue<MicroService> EventsMicroServiceList = new ConcurrentLinkedQueue<>();//create queue of microservices for this event
                  EventsMicroServiceList.add(m);//add micro-service to the queue,now this microservice(thread) can handle this event too
                  hashEventToMicroServiceQueue.put(type, EventsMicroServiceList);//add this new pair to the list of <events,microservices that handle these events>
                  listOfTypesOfEvents.add(type);
@@ -75,12 +74,11 @@ public class MessageBusImpl implements MessageBus {
 
 
 	//The same as above(subscribeEvent), for broadcasts
-	public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {//problem with compilation
-
+	public  void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {//problem with compilation
              if (hashBroadcastToMicroServicesQueue.containsKey(type)) {
-                 ConcurrentLinkedQueue<MicroService> BroadcastsMicroserviceList = hashBroadcastToMicroServicesQueue.get(type);
-                 BroadcastsMicroserviceList.add(m);
-             } else {
+               hashBroadcastToMicroServicesQueue.get(type).add(m);
+             }
+             else {
                  ConcurrentLinkedQueue<MicroService> BroadcastsMicroserviceList = new ConcurrentLinkedQueue<>();
                  BroadcastsMicroserviceList.add(m);
                  hashBroadcastToMicroServicesQueue.put(type, BroadcastsMicroserviceList);
@@ -94,16 +92,14 @@ public class MessageBusImpl implements MessageBus {
 //Resolve the event's corresponding future object,AFTER it was sent back to the micro-service who sent the event in the first place
 //recieving micro-service uses this method
 	public <T> void complete(Event<T> e, T result) {
-        Future EventsAnswer=MapBetweenEventAndFutureObj.get(e);
-        EventsAnswer.resolve(result);
+        MapBetweenEventAndFutureObj.get(e).resolve(result);
 	}
 
 
 	public void sendBroadcast(Broadcast b) {//no need to synchronize,each broadcast type has its own queue of micro-services
-		ConcurrentLinkedQueue<MicroService> ListOfMicros=hashBroadcastToMicroServicesQueue.get(b.getClass());
-		for (MicroService item:ListOfMicros) {//for every microservice that has subscribed to get this broadcast
-            LinkedBlockingQueue<Message> addBroadcastHere = hashMicroServiceToMessagesQueue.get(item);//get messagequeue of microservice
-            addBroadcastHere.add(b);//add the broadcast to the messagequeue
+		for (MicroService item:hashBroadcastToMicroServicesQueue.get(b.getClass())) {//for every microservice that has subscribed to get this broadcast
+            hashMicroServiceToMessagesQueue.get(item).add(b);//get messagequeue of microservice, add message to it
+
         }
 	}
 
@@ -113,7 +109,7 @@ public class MessageBusImpl implements MessageBus {
 	     if (hashEventToMicroServiceQueue.containsKey(e.getClass())) {
              ConcurrentLinkedQueue<MicroService> QueueOfEvent = hashEventToMicroServiceQueue.get(e.getClass());//get the queue assigned to this type of event
              MicroService handleEvent = QueueOfEvent.remove();//holds the micro service that will get the event and handle it.
-             System.out.println(" the name of the micro service that will handle is "+ handleEvent.getName());//test i added
+             System.out.println(" the name of the micro service that will handle is "+ handleEvent.getName());//test I added
             LinkedBlockingQueue<Message> QueueOfMicroservice = hashMicroServiceToMessagesQueue.get(handleEvent);//get the message queue of the corresponding micro-service
              if(QueueOfMicroservice==null) System.out.println("the queue is null");
              QueueOfMicroservice.add(e);//"add" and not "put", this is a non-blocking method,
@@ -128,25 +124,21 @@ public class MessageBusImpl implements MessageBus {
 
 
 	public void register(MicroService m) {
-       LinkedBlockingQueue<Message> MessageList=new LinkedBlockingQueue<>();
-		hashMicroServiceToMessagesQueue.put(m, MessageList);
+		hashMicroServiceToMessagesQueue.put(m,new LinkedBlockingQueue<>());
 
     }
 
 
 	public void unregister(MicroService m) {
-        ConcurrentLinkedQueue<MicroService> erasedQueue;
+        hashMicroServiceToMessagesQueue.remove(m, hashMicroServiceToMessagesQueue.get(m));//remove MS and its messageQueue
         for (Class<? extends Event> type : listOfTypesOfEvents)//for every type of event, erase the micro service from its handling list
         {
-            erasedQueue = hashEventToMicroServiceQueue.get(type);
-            erasedQueue.remove(m);
+            hashEventToMicroServiceQueue.get(type).remove(m);
         }
         for (Class<? extends Broadcast> type : listOfTypesOfBroadcasts) {//for every type of broadcast, erase the micro service from its handling list
-            erasedQueue = hashBroadcastToMicroServicesQueue.get(type);
-            erasedQueue.remove(m);
+            hashBroadcastToMicroServicesQueue.get(type).remove(m);
         }
-        LinkedBlockingQueue erasedQueueOfMessages = hashMicroServiceToMessagesQueue.get(m);
-        hashMicroServiceToMessagesQueue.remove(m, erasedQueueOfMessages);
+
     }
 
 //need to understand the difference between waiting for a message and being in the middle of handling one
@@ -157,7 +149,7 @@ public class MessageBusImpl implements MessageBus {
             try {
                 return  hashMicroServiceToMessagesQueue.get(m).take();//get the last Message from the message Queue
             } catch (InterruptedException e) {
-                System.out.println("wait message thread interupted");
+                System.out.println("await message thread interupted");
                 throw new InterruptedException();
             }
             //finally {
@@ -166,6 +158,7 @@ public class MessageBusImpl implements MessageBus {
             //  }
 
             //while(hashMicroServiceToMessagesQueue.isEmpty())
+
         }
 
 
