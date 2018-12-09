@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Passive object representing the store finance management. 
@@ -24,7 +25,7 @@ public class MoneyRegister {
 
 	private  List<OrderReceipt> issuedReceipts;
 	private List<Integer> orderIdList = new ArrayList<>();
-	private volatile int total;
+	private AtomicInteger total;
 
 
 	private static class MoneyRegisterHolder {
@@ -33,7 +34,7 @@ public class MoneyRegister {
 
 	private MoneyRegister() {
 		issuedReceipts = new CopyOnWriteArrayList<>(); // is a thread-safe impl. of List<> interface.
-		total = 0;
+		total = new AtomicInteger(0);
 	}
 
 	/**
@@ -63,7 +64,7 @@ public class MoneyRegister {
      * Retrieves the current total earnings of the store.  
      */
 	public int getTotalEarnings() {
-		return total;
+		return total.get();
 	}
 	
 	/**
@@ -73,13 +74,13 @@ public class MoneyRegister {
      */
 
 	public void chargeCreditCard(Customer c, int amount) {
-		synchronized (c) {
-			if (c.getAvailableCreditAmount() < amount)
-				throw new IllegalArgumentException("not enough money in credit card of " + c.getName());
-			int left = c.decreaseAmountBy(amount);
-			//System.out.println("customer " + c.getName() + " has " + left + " left in his credit card");
-			total = total + amount;
-		}
+		c.decreaseAmountBy(amount);
+		int currentTotal;
+		int updatedCurrentTotal;
+		do {
+			currentTotal = total.get();
+			updatedCurrentTotal = currentTotal + amount;
+		} while (total.compareAndSet(currentTotal,updatedCurrentTotal));
 	}
 	
 	/**
@@ -112,7 +113,7 @@ public class MoneyRegister {
 	}
 
 	public void setTotal(int num) {///public method,just for testing,needs to be erased later on
-		this.total = num;
+		this.total.set(num);
 	}
 	public void clearIssuedReciepts(){///public method,just for testing,needs to be erased later on
 		issuedReceipts.clear();

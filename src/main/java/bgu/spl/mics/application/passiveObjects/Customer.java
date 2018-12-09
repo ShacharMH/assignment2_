@@ -18,7 +18,7 @@ public class Customer {
 	private int creditNumber;
 	private OrderReceipt[] orderReceipts;
 
-	//private AtomicInteger reservedAmount = new AtomicInteger(0);
+	private AtomicInteger reservedAmount = new AtomicInteger(0);
 	//private Object lock = new Object();
 
 
@@ -86,35 +86,47 @@ public class Customer {
 		return creditNumber;
 	}
 
-	// decreases amount by num and returns the current updated amount in credit card.
-	public int decreaseAmountBy(int num) {
-		int currentCreditAmount;
-		int updatedCurrentCreditAmount;
-		do {
-			currentCreditAmount = getAvailableCreditAmount();
-			updatedCurrentCreditAmount = currentCreditAmount + num;
-		} while (!creditAmount.compareAndSet(currentCreditAmount,updatedCurrentCreditAmount));
-		return getAvailableCreditAmount();
+	public int checkIfThereIsEnoughMoneyInCreditCard(int amount) {
+		return getAvailableCreditAmount()-amount;
 	}
 
+	// decreases amount in reservedAmount and returns the updated reservedAmount.
+	public void decreaseAmountBy(int num) {
+		int currentReservedAmount;
+		int updatedCurrentReservedAmount;
+		do {
+			currentReservedAmount = getAvailableCreditAmount();
+			updatedCurrentReservedAmount = currentReservedAmount + num;
+		} while (!reservedAmount.compareAndSet(currentReservedAmount,updatedCurrentReservedAmount));
+		//return getAvailableReservedAmount();
+	}
+
+	public int getAvailableReservedAmount() {
+		return reservedAmount.get();
+	}
 
 	public String toString(){
 		return name+" id is"+ Id+" distance is"+distance +" "+address+" ,credit amount "+creditAmount+" ,credit number is "+creditNumber+orderReceipts[0].getBookTitle();
 	}
 
-	/*
-	public boolean reserveAmount(int amount) {
+	// transfers amount from creditAmount to ReservedAmount. returns false if there's not enough money to reserve.
+	public synchronized boolean reserveAmount(int amount) {
 
-
-		//add a condition: if amount > credit card amount -> return false;
-
-		int currentReservedAmount;
-		int updatedCurrentReservedAmount;
-		do {
-			currentReservedAmount = reservedAmount.get();
-			updatedCurrentReservedAmount = reservedAmount.get() + amount;
-		} while (!reservedAmount.compareAndSet(currentReservedAmount,updatedCurrentReservedAmount));
-		decreaseAmountBy(amount);
+		if (checkIfThereIsEnoughMoneyInCreditCard(amount)<0)
+			return false;
+		creditAmount.set(creditAmount.get() - amount);
+		reservedAmount.set(reservedAmount.get() + amount);
+		return true;
 	}
-	*/
+
+	// returns amount from reservedAmount to creditAmount. returns false if the amount to return is more than there is in reservedAmount
+	public synchronized boolean releaseAmount(int amount) {
+
+		if (amount > getAvailableReservedAmount())
+			return false;
+		reservedAmount.set(reservedAmount.get() - amount);
+		creditAmount.set(creditAmount.get() + amount);
+		return true;
+	}
+
 }
