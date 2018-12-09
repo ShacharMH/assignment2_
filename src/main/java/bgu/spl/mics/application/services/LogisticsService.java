@@ -25,6 +25,7 @@ public class LogisticsService extends MicroService {
 			String address = DeliveryEventCallback.getAddress();
 			int distance = DeliveryEventCallback.getDistance();
 			DeliveryEventCallback.getDeliveryVehicle().deliver(address,distance);
+			complete(DeliveryEventCallback, true);
 		});
 		
 	}

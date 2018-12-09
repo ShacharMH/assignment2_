@@ -25,7 +25,7 @@ everything works correctly ans is thread-safe.
  */
 public class Inventory {
 
-	private ConcurrentHashMap<String,BookInventoryInfo> myInventory;
+	private final ConcurrentHashMap<String,BookInventoryInfo> myInventory;
 	private String[] bookNamesList;
 	private boolean isLoaded = false;
 
