@@ -50,7 +50,7 @@ private static class HolderOfResourceHolder {
      */
 	/* I don't think this is synchronized - specifically the last 3 lines...
 	but on the other hand, it doesn't really matter. all that matters is that we
-	return SOME delivery vehicle in each future object, and that, as far as I can see, happens.
+	return SOME delivery vehicle in each future object, and that, as far as I can see, happens. - now I'm not sure that's true.
 	 */
 	public Future<DeliveryVehicle> acquireVehicle() {
 			DeliveryVehicle result=null;
@@ -74,6 +74,12 @@ private static class HolderOfResourceHolder {
      */
 	public void releaseVehicle(DeliveryVehicle vehicle) {
 		listOfCars.add(vehicle);
+		if (listOfCars.size() > numOfCars) {
+			synchronized (this) {
+				if (listOfCars.size() > numOfCars)
+					throw new IllegalArgumentException("there are more vehicles in listOfCars than was loaded");
+			}
+		}
 	}
 	
 	/**

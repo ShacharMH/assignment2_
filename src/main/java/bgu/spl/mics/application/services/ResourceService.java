@@ -27,7 +27,6 @@ public class ResourceService extends MicroService{
 
 	private ResourcesHolder resourcesHolder;
 	private BlockingQueue<WaitingDelivery> onGoingDeliveryQueue;
-	//private BlockingQueue<Future<Boolean>> onGoingDeliveryEvent;
 
 	public ResourceService() {
 		super("ResourceService");
@@ -61,7 +60,7 @@ public class ResourceService extends MicroService{
 							AcquireVehicleEventCallBack.getDistance());
 					Future<Boolean> deliveryEventFuture = sendEvent(deliveryEvent); // i. send a delivery event
 					onGoingDeliveryQueue.add(new WaitingDelivery(deliveryEventFuture, myDeliveryVehicle, AcquireVehicleEventCallBack)); // ii. push delivery event to onGoingDeliveryQueue
-					releaseVehicles(); // perform the function releaseVehicles once
+					releaseVehicles(); // iii. perform the function releaseVehicles once
 					successful = true;
 				} else { // b. unsuccessful
 					while (!releaseVehicles()) ;

@@ -1,6 +1,9 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.BookOrderEvent;
+import bgu.spl.mics.application.messages.TickBroadcast;
+import bgu.spl.mics.application.passiveObjects.Inventory;
 
 /**
  * Selling service in charge of taking orders from customers.
@@ -14,14 +17,23 @@ import bgu.spl.mics.MicroService;
  */
 public class SellingService extends MicroService{
 
+	private Inventory inventory;
+
 	public SellingService(String name) {
 		super(name);
-		// TODO Implement this
+		inventory = Inventory.getInstance();
 	}
 
 	@Override
 	protected void initialize() {
-		// TODO Implement this
+
+		subscribeEvent(BookOrderEvent.class, BookOrderEventCallback -> {
+
+		});
+
+		subscribeBroadcast(TickBroadcast.class, TickBroadcastCallback -> {
+
+		});
 		
 	}
 
