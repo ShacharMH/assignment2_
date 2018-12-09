@@ -2,7 +2,6 @@ package bgu.spl.mics.application.passiveObjects;
 
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 
 import java.io.FileWriter;
 import java.io.IOException;
