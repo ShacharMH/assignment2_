@@ -58,11 +58,6 @@ public class Future<T> {
      * @return true if this object has been resolved, false otherwise
      */
 	public boolean isDone() { // why not just "return resolved"?
-		/*if(resolved==true)
-			return true;
-		else
-			return false;
-			*/
 		return resolved;
 	}
 	

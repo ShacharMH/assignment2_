@@ -5,7 +5,10 @@ import bgu.spl.mics.Future;
 
 import java.util.List;
 import java.util.PriorityQueue;
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Passive object representing the resource manager.
@@ -16,23 +19,17 @@ import java.util.concurrent.*;
  * <p>
  * You can add ONLY private methods and fields to this class.
  */
-
 //Amir
 //There is a fixed amount of cars-supplied in the json file input.
 public class ResourcesHolder {
-
 	private final BlockingQueue<DeliveryVehicle> listOfCars;
-	private int numOfCars; // no one changes this value. this is for debugging purposes.
 
 
-private static class HolderOfResourceHolder {
-	private static ResourcesHolder List = new ResourcesHolder();
+private static class HolderOfResourceHolder{
+	private static ResourcesHolder List;
 }
-	private ResourcesHolder() {
-		listOfCars = new LinkedBlockingQueue<DeliveryVehicle>();//need to change capacity to number of vehicles from input
-		/* I don't think you need to put a number here.. when you call the load function then the cars are being added and that's it
-		The implementation of ArrayBlockingQueue does not allow it so I chanfes the implementation to LinkedBlockingQueue.
-		 */
+	private ResourcesHolder(int NumOfCars){
+		listOfCars=new ArrayBlockingQueue<DeliveryVehicle>(NumOfCars);//need to change capacity to number of vehicles from input
 	}
 	/**
      * Retrieves the single instance of this class.
@@ -48,19 +45,15 @@ private static class HolderOfResourceHolder {
      * @return 	{@link Future<DeliveryVehicle>} object which will resolve to a 
      * 			{@link DeliveryVehicle} when completed.   
      */
-	/* I don't think this is synchronized - specifically the last 3 lines...
-	but on the other hand, it doesn't really matter. all that matters is that we
-	return SOME delivery vehicle in each future object, and that, as far as I can see, happens. - now I'm not sure that's true.
-	 */
 	public Future<DeliveryVehicle> acquireVehicle() {
 			DeliveryVehicle result=null;
 			try {
 				result = listOfCars.take();//get a vehicle from queue
 			}
 			catch (InterruptedException e){
-				System.out.println("Interrupted in acquiring a vehicle");
+				System.out.println("Interupted in acquiring a vehicle");
 			}
-			Future<DeliveryVehicle> ans = new Future<>();
+			Future<DeliveryVehicle> ans=new Future<>();
 			ans.resolve(result);
 			return ans;
 
@@ -74,12 +67,6 @@ private static class HolderOfResourceHolder {
      */
 	public void releaseVehicle(DeliveryVehicle vehicle) {
 		listOfCars.add(vehicle);
-		if (listOfCars.size() > numOfCars) {
-			synchronized (this) {
-				if (listOfCars.size() > numOfCars)
-					throw new IllegalArgumentException("there are more vehicles in listOfCars than was loaded");
-			}
-		}
 	}
 	
 	/**
@@ -87,11 +74,11 @@ private static class HolderOfResourceHolder {
      * <p>
      * @param vehicles	Array of {@link DeliveryVehicle} instances to store.
      */
-	public void load(DeliveryVehicle[] vehicles) {
+	public void load(DeliveryVehicle[] vehicles) {//moved the construction of the queue of vehicles to here, assuming we will do "load" only once in the program.
+		HolderOfResourceHolder.List=new ResourcesHolder(vehicles.length);
 		for (DeliveryVehicle v:vehicles){
 			listOfCars.add(v);
 		}
-		numOfCars = vehicles.length;
 	}
 
 }

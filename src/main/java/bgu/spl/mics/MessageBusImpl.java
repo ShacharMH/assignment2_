@@ -23,16 +23,11 @@ public class MessageBusImpl implements MessageBus {
 	private final ConcurrentHashMap<Class <? extends Event>,ConcurrentLinkedQueue<MicroService>> hashEventToMicroServiceQueue;//for each type of event, queue of microservices that handle it
 	private final ConcurrentHashMap<Class<? extends Broadcast>,ConcurrentLinkedQueue<MicroService>> hashBroadcastToMicroServicesQueue;//for each type of broadcast, queue of microservices that handle it
 	private final ConcurrentHashMap<MicroService, ArrayBlockingQueue<Message>> hashMicroServiceToMessagesQueue;//each micro-service and its message queue
-	//private final ConcurrentHashMap<MicroService,Queue<Integer>> listOfMessagesMicroServiceSubscribedTo;//probably unnecessary. addition, helps to know where else to delete microservice from
-    private final ConcurrentHashMap<Event,Future> MapBetweenEventAndFutureObj;//addition
-   // private final ConcurrentHashMap<Integer,Class <? extends Event>> MapBetweenNumberAndEvent;//addition,probably unnecessary
-    //private final ConcurrentHashMap<Integer,Class<? extends Broadcast>> MapBetweenNumberAndBroadcast;//addition/probably unnecessary
-    //private volatile Integer  EventCount; probably unnecessary
-    //private volatile Integer  BroadcastCount; probably unnecessary
-    private final ConcurrentLinkedQueue<Class <? extends Event>> listOfTypesOfEvents;
-    private final ConcurrentLinkedQueue<Class<? extends Broadcast>> listOfTypesOfBroadcasts;
+    private final ConcurrentHashMap<Event,Future> MapBetweenEventAndFutureObj;//addition, for finding the event its corresponding future object in method "complete"
+    private final ConcurrentLinkedQueue<Class <? extends Event>> listOfTypesOfEvents;//every type of event, for "unregister" method
+    private final ConcurrentLinkedQueue<Class<? extends Broadcast>> listOfTypesOfBroadcasts;//every type of broadcast, for "unregister" method
     private ExampleEvent exampleEvent=new ExampleEvent("lalala");//just for testing
-    private Message message;
+    private Message message;//just for tests
 
     private static class BusHolder {
         private static MessageBusImpl instance = new MessageBusImpl();
@@ -46,17 +41,12 @@ public class MessageBusImpl implements MessageBus {
 		this.hashBroadcastToMicroServicesQueue = new ConcurrentHashMap<>();
 		this.hashEventToMicroServiceQueue = new ConcurrentHashMap<>();
 		this.hashMicroServiceToMessagesQueue = new ConcurrentHashMap<>();
-		//this.listOfMessagesMicroServiceSubscribedTo = new ConcurrentHashMap<>();//POSITIVE IDENTIFIER FOR EVENT,NEGATIVE FOR BROADCAST
-       // this.MapBetweenNumberAndEvent= new ConcurrentHashMap<>();
-       // this.MapBetweenNumberAndBroadcast= new ConcurrentHashMap<>();
         this.MapBetweenEventAndFutureObj= new ConcurrentHashMap<>();
-        //this.EventCount=1;
-       // this.BroadcastCount=1;
         this.listOfTypesOfEvents=new ConcurrentLinkedQueue<>();
         this.listOfTypesOfBroadcasts=new ConcurrentLinkedQueue<>();
 	}
 
-//
+
 
 
 
@@ -71,24 +61,14 @@ public class MessageBusImpl implements MessageBus {
 
     //see if event already exists.  if so, add the ms to the event's queue. else, push the new couple (event, ms), while creating the ms's queue for the event.
 	 public   <T> void subscribeEvent (Class <? extends Event<T>> type, MicroService m) {
-
              if (hashEventToMicroServiceQueue.containsKey(type)) {//if event already exists
                  ConcurrentLinkedQueue<MicroService> EventsMicroServiceList = hashEventToMicroServiceQueue.get(type);//get the queue of microservices for this type of event
                  EventsMicroServiceList.add(m);//add micro-service to the queue,now this microservice(thread) can handle this event too
-                 // MapBetweenNumberAndEvent.put(EventCount, type);//add the event an identifier
-                 // Queue<Integer> M = listOfMessagesMicroServiceSubscribedTo.get(m);
-                 //M.add(EventCount);//event identifier is in micro-service's list
-                 // EventCount++;//update event counter, synchronized
-
              }
              else {
                  ConcurrentLinkedQueue<MicroService> EventsMicroServiceList = new ConcurrentLinkedQueue<MicroService>();//create queue of microservices for this event
                  EventsMicroServiceList.add(m);//add micro-service to the queue,now this microservice(thread) can handle this event too
                  hashEventToMicroServiceQueue.put(type, EventsMicroServiceList);//add this new pair to the list of <events,microservices that handle these events>
-                 //MapBetweenNumberAndEvent.put(EventCount, type);//add the event an identifier
-                // Queue<Integer> M = listOfMessagesMicroServiceSubscribedTo.get(m);
-                // M.add(EventCount);//event identifier is in micro-service's list
-               //  EventCount++;//update event counter, synchronized
                  listOfTypesOfEvents.add(type);
              }
 
@@ -103,22 +83,10 @@ public class MessageBusImpl implements MessageBus {
              if (hashBroadcastToMicroServicesQueue.containsKey(type)) {
                  ConcurrentLinkedQueue<MicroService> BroadcastsMicroserviceList = hashBroadcastToMicroServicesQueue.get(type);
                  BroadcastsMicroserviceList.add(m);
-                 //Queue<Message> M=listOfMessagesMicroServiceSubscribedTo.get(m);//Adding broadcast to list of broadcast/events
-                 //M.add(type);//not sure why there is a compilation problem
-                // MapBetweenNumberAndBroadcast.put(BroadcastCount,type);//add broadcast an identifier
-               //  Queue<Integer> M = listOfMessagesMicroServiceSubscribedTo.get(m);
-                // M.add(BroadcastCount * (-1));//broadcast identifier is in micro-service's list
-                // BroadcastCount++;//update broadcast counter, synchronized
-
-
              } else {
                  ConcurrentLinkedQueue<MicroService> BroadcastsMicroserviceList = new ConcurrentLinkedQueue<MicroService>();
                  BroadcastsMicroserviceList.add(m);
                  hashBroadcastToMicroServicesQueue.put(type, BroadcastsMicroserviceList);
-                // MapBetweenNumberAndBroadcast.put(BroadcastCount,type);//add broadcast identifier
-                // Queue<Integer> M = listOfMessagesMicroServiceSubscribedTo.get(m);
-                // M.add(BroadcastCount * (-1));//broadcast identifier is in micro-service's list
-               // BroadcastCount++;//update broadcast counter, synchronized
                  listOfTypesOfBroadcasts.add(type);
              }
 
@@ -134,7 +102,7 @@ public class MessageBusImpl implements MessageBus {
 	}
 
 
-	public void sendBroadcast(Broadcast b) {
+	public void sendBroadcast(Broadcast b) {//no need to synchronize,each broadcast type has its own queue of micro-services
 		ConcurrentLinkedQueue<MicroService> ListOfMicros=hashBroadcastToMicroServicesQueue.get(b.getClass());
 		for (MicroService item:ListOfMicros) {//for every microservice that has subscribed to get this broadcast
             ArrayBlockingQueue<Message> addBroadcastHere = hashMicroServiceToMessagesQueue.get(item);//get messagequeue of microservice
@@ -143,7 +111,8 @@ public class MessageBusImpl implements MessageBus {
 	}
 
 	//Insert event to messagequeue of micro-service(round robin), return future object to micro-service that sent this event
-	public <T> Future<T> sendEvent(Event<T> e) {
+    //need to synchronize this fellow
+	public synchronized  <T> Future<T>  sendEvent(Event<T> e) {
 	     if (hashEventToMicroServiceQueue.containsKey(e.getClass())) {
              ConcurrentLinkedQueue<MicroService> QueueOfEvent = hashEventToMicroServiceQueue.get(e.getClass());//get the queue assigned to this type of event
              MicroService handleEvent = QueueOfEvent.remove();//holds the micro service that will get the event and handle it.
@@ -207,7 +176,7 @@ public class MessageBusImpl implements MessageBus {
         */
 	 }
 
-
+//need to understand the difference between waiting for a message and being in the middle of handling one
         public Message awaitMessage (MicroService m) throws InterruptedException {//need to use interupted mechanism
             if (!hashMicroServiceToMessagesQueue.containsKey(m)) {
                 throw new IllegalStateException();
@@ -215,13 +184,17 @@ public class MessageBusImpl implements MessageBus {
             try {
                 Message handleNow = hashMicroServiceToMessagesQueue.get(m).take();//get the last Message from the message Queue
                 return handleNow;
-            } catch (InterruptedException e) {
-                Thread.interrupted();
             }
-            finally {
-                Message handleNow = hashMicroServiceToMessagesQueue.get(m).take();//get the last Message from the message Queue
-                return handleNow;
+            catch (InterruptedException e) {
+                System.out.println("wait message thread interupted");
+                throw new InterruptedException();
             }
+            //finally {
+              //  Message handleNow = hashMicroServiceToMessagesQueue.get(m).take();//get the last Message from the message Queue
+            //    return handleNow;
+          //  }
+
+            //while(hashMicroServiceToMessagesQueue.isEmpty())
         }
 
 

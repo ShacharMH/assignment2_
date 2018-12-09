@@ -68,7 +68,7 @@ public class MessageBusImplTest {
     public void complete() {//complete for a specific event
         bus.register(ExampleService);
         bus.subscribeEvent(ExampleEvent.class,ExampleService);
-        bus.sendEvent(Delivery);
+       // bus.sendEvent(Delivery);
         String A="DFFF";
         bus.complete(Delivery,A);
     }
@@ -87,8 +87,8 @@ public class MessageBusImplTest {
         setUp();
         bus.register(ExampleService);
         bus.subscribeEvent(ExampleEvent.class,ExampleService);
-        bus.subscribeEvent(ExampleEvent.class,ExampleSendService);
-        bus.sendEvent(Delivery);
+       // bus.subscribeEvent(ExampleEvent.class,ExampleSendService);
+       // bus.sendEvent(Delivery);
     }
 
     @Test
@@ -107,24 +107,26 @@ public class MessageBusImplTest {
         bus.register(ExampleService);
         bus.register(ExampleSendService);
         bus.subscribeEvent(ExampleEvent.class, ExampleService);
-        bus.subscribeEvent(ExampleEvent.class,ExampleSendService);
-        bus.sendEvent(Delivery);
+       // bus.subscribeEvent(ExampleEvent.class,ExampleSendService);
+       // bus.sendEvent(Delivery);
         ExampleEvent D1=new ExampleEvent("EVENT1");
         ExampleEvent D2=new ExampleEvent("EVENT2");
-        bus.sendEvent(D1);
-        bus.sendEvent(D2);
+        //bus.sendEvent(D1);
+       // bus.sendEvent(D2);
         Runnable runnable2=()-> {
-
             try {
-                Message get = bus.awaitMessage(ExampleService);
+                Message get = bus.awaitMessage(ExampleService);//name of service is broadcast
+                if (get!=null) System.out.println("awaitmessage returns not null");
+                if (get==null) System.out.println("awaitmessage returns null");
             } catch (InterruptedException e) {
                 System.out.println("awaiting interupted");
             }
         };
         Runnable runnable1 = () -> {
-
             try {
-                Message get2 = bus.awaitMessage(ExampleSendService);
+                Message get2 = bus.awaitMessage(ExampleSendService);//name of service is AMIR
+                if (get2!=null) System.out.println("awaitmessage2 returns not null");
+                if (get2==null) System.out.println("awaitmessage returns null");
             }
             catch (InterruptedException e){
                 System.out.println("awaiting interupted");

@@ -99,8 +99,8 @@ public class BookStoreRunner implements Serializable {
                 System.out.println(Car.getLicense());//test
             }
 
-            ResourcesHolder resourcesHolder = ResourcesHolder.getInstance();//Load the vehicles
-            resourcesHolder.load(vehicles);//ResourcesHolder is ready
+            ResourcesHolder resourcesHolder = ResourcesHolder.getInstance();//get the instance(empty instance)
+            resourcesHolder.load(vehicles);//Load the vehicles,ResourcesHolder is ready
 
 //checked the parsing of vehicles,works.
 
