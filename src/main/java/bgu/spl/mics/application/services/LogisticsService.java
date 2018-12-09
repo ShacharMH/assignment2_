@@ -14,8 +14,8 @@ import bgu.spl.mics.application.messages.DeliveryEvent;
  */
 public class LogisticsService extends MicroService {
 
-	public LogisticsService() {
-		super("LogisticsService");
+	public LogisticsService(String name) {
+		super(name);
 	}
 
 	@Override

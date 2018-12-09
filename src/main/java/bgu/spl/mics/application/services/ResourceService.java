@@ -28,8 +28,8 @@ public class ResourceService extends MicroService{
 	private ResourcesHolder resourcesHolder;
 	private BlockingQueue<WaitingDelivery> onGoingDeliveryQueue;
 
-	public ResourceService() {
-		super("ResourceService");
+	public ResourceService(String name) {
+		super(name);
 		resourcesHolder = ResourcesHolder.getInstance();
 		onGoingDeliveryQueue = new LinkedBlockingQueue<>();
 	}
