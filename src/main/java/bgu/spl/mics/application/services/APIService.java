@@ -1,7 +1,11 @@
 package bgu.spl.mics.application.services;
 
+import bgu.spl.mics.Future;
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.OrderBookEvent;
+import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.passiveObjects.Customer;
+import bgu.spl.mics.application.passiveObjects.OrderReceipt;
 
 /**
  * APIService is in charge of the connection between a client and the store.
@@ -13,17 +17,30 @@ import bgu.spl.mics.application.passiveObjects.Customer;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class APIService extends MicroService{
+private OrderReceipt[] orderReceipts;
+volatile int CurrentTime=0;
 private Customer customer;
 
-	public APIService(String name,Customer customer1) {
+	public APIService(String name,OrderReceipt[] orders,Customer customer) {
 		super(name);
-		this.customer=customer1;
+		this.customer=customer;
+		this.orderReceipts=orders;
 	}
 
 	@Override
 	protected void initialize() {
-		// TODO Implement this
-		
+		subscribeBroadcast(TickBroadcast.class, TickBroadcastCallback -> {
+			CurrentTime=TickBroadcastCallback.getCurrentTime();
+			if (TickBroadcastCallback.getCurrentTime()==TickBroadcastCallback.getDuration()) terminate();
+			else
+			{
+				Future<OrderReceipt> future=new Future<>();
+				for(OrderReceipt o:orderReceipts){
+					if (o.getOrderTick()==CurrentTime)
+						 future=sendEvent(new OrderBookEvent(o.getBookTitle(),CurrentTime));
+				}
+			}
+		});
 	}
 
 }

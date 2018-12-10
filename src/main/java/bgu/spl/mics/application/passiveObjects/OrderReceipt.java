@@ -24,7 +24,7 @@ public class OrderReceipt {
 		this.Seller = Seller;//Unknown when constructed, defaulted as " ".
 		this.customerId = customerId;
 		this.title = title;
-		this.price = price;
+		this.price = price;//unknown when constructed(will be resolved in CheckAvailabilityEvent), defaulted as 0
 		this.orderTick = orderTick;
 		this.proccessTick = proccessTick;//Unknown when constructed, defaulted as 0.
 		this.issuedTick = issuedTick;//Unknown when constructed, defaulted as 0.

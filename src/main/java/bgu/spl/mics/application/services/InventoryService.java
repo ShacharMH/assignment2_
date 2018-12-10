@@ -2,6 +2,7 @@ package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.CheckAvailabilityEvent;
+import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.passiveObjects.Inventory;
 
 import bgu.spl.mics.application.passiveObjects.*;
@@ -20,6 +21,7 @@ import bgu.spl.mics.application.passiveObjects.*;
 public class InventoryService extends MicroService{
 
 	private Inventory inventory;
+	private int CurrentTime;
 
 	public InventoryService(String name) {
 		super(name);
@@ -45,6 +47,11 @@ public class InventoryService extends MicroService{
 				else // book not in stock anymore :(
 					complete(CheckAvailabilityCallback,-1);
 				}
+		});
+
+		subscribeBroadcast(TickBroadcast.class, TickBroadcastCallback -> {
+			this.CurrentTime = TickBroadcastCallback.getCurrentTime();
+			if (TickBroadcastCallback.getCurrentTime() == TickBroadcastCallback.getDuration()) terminate();
 		});
 	}
 

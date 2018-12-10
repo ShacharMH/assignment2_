@@ -62,9 +62,9 @@ public class MessageBusImpl implements MessageBus {
              if (hashEventToMicroServiceQueue.containsKey(type)) {//if event already exists
                  hashEventToMicroServiceQueue.get(type).add(m);//get the queue of microservices for this type of event, add MS
              } else {
-                 ConcurrentLinkedQueue<MicroService> EventsMicroServiceList = new ConcurrentLinkedQueue<>();//create queue of microservices for this event
+                 ConcurrentLinkedQueue<MicroService> EventsMicroServiceList = new ConcurrentLinkedQueue<>();//create queue of microservices for this type of event
                  EventsMicroServiceList.add(m);//add micro-service to the queue,now this microservice(thread) can handle this event too
-                 hashEventToMicroServiceQueue.put(type, EventsMicroServiceList);//add this new pair to the list of <events,microservices that handle these events>
+                 hashEventToMicroServiceQueue.put(type, EventsMicroServiceList);//add this new pair to the list of <event type,microservices that handles events of this type>
                  listOfTypesOfEvents.add(type);
              }
          }
@@ -75,7 +75,7 @@ public class MessageBusImpl implements MessageBus {
 
 
 	//The same as above(subscribeEvent), for broadcasts
-	public  void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {//problem with compilation
+	public  void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
          synchronized (hashBroadcastToMicroServicesQueue) {
              if (hashBroadcastToMicroServicesQueue.containsKey(type)) {
                  hashBroadcastToMicroServicesQueue.get(type).add(m);

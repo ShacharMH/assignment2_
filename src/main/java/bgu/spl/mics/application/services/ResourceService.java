@@ -4,6 +4,7 @@ import bgu.spl.mics.Future;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.AcquireVehicleEvent;
 import bgu.spl.mics.application.messages.DeliveryEvent;
+import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.passiveObjects.DeliveryVehicle;
 import bgu.spl.mics.application.passiveObjects.ResourcesHolder;
 
@@ -27,6 +28,7 @@ public class ResourceService extends MicroService{
 
 	private ResourcesHolder resourcesHolder;
 	private BlockingQueue<WaitingDelivery> onGoingDeliveryQueue;
+	private int CurrentTime;
 
 	public ResourceService(String name) {
 		super(name);
@@ -37,6 +39,12 @@ public class ResourceService extends MicroService{
 
 	@Override
 	protected void initialize() {
+
+
+		subscribeBroadcast(TickBroadcast.class, TickBroadcastCallback -> {
+			this.CurrentTime = TickBroadcastCallback.getCurrentTime();
+			if (TickBroadcastCallback.getCurrentTime() == TickBroadcastCallback.getDuration()) terminate();
+		});
 
 		subscribeEvent(AcquireVehicleEvent.class, AcquireVehicleEventCallBack -> {
 			/*

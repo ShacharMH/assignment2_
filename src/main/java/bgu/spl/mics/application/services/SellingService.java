@@ -18,6 +18,7 @@ import bgu.spl.mics.application.passiveObjects.Inventory;
 public class SellingService extends MicroService{
 
 	private Inventory inventory;
+	private int CurrentTime;
 
 	public SellingService(String name) {
 		super(name);
@@ -32,7 +33,8 @@ public class SellingService extends MicroService{
 		});
 
 		subscribeBroadcast(TickBroadcast.class, TickBroadcastCallback -> {
-
+			this.CurrentTime = TickBroadcastCallback.getCurrentTime();
+			if (TickBroadcastCallback.getCurrentTime() == TickBroadcastCallback.getDuration()) terminate();
 		});
 		
 	}

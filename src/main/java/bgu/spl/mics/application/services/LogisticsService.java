@@ -2,6 +2,7 @@ package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.DeliveryEvent;
+import bgu.spl.mics.application.messages.TickBroadcast;
 
 /**
  * Logistic service in charge of delivering books that have been purchased to customers.
@@ -13,6 +14,7 @@ import bgu.spl.mics.application.messages.DeliveryEvent;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class LogisticsService extends MicroService {
+	private int CurrentTime;
 
 	public LogisticsService(String name) {
 		super(name);
@@ -26,6 +28,11 @@ public class LogisticsService extends MicroService {
 			int distance = DeliveryEventCallback.getDistance();
 			DeliveryEventCallback.getDeliveryVehicle().deliver(address,distance);
 			complete(DeliveryEventCallback, true);
+		});
+
+		subscribeBroadcast(TickBroadcast.class, TickBroadcastCallback -> {
+			this.CurrentTime = TickBroadcastCallback.getCurrentTime();
+			if (TickBroadcastCallback.getCurrentTime() == TickBroadcastCallback.getDuration()) terminate();
 		});
 		
 	}

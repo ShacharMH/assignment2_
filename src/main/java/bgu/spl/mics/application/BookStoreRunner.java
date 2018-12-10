@@ -184,24 +184,27 @@ public class BookStoreRunner implements Serializable {
                     JsonObject CurrentOrder = (JsonObject) ReadOrders.next();
                     String title = CurrentOrder.get("bookTitle").getAsString();
                     int tickToSendBook = CurrentOrder.get("tick").getAsInt();
-                    int price = 0;
-                    for (BookInventoryInfo b : inventory) {
-                        if (b.getBookTitle().equals(title)) {
-                            price = b.getPrice();
-                        }
-                    }
-                    OrderReceipt orderReceipt = new OrderReceipt(countOrders, "", id, title, price, tickToSendBook, 0, 0);
+                    //int price = 0;
+                   // for (BookInventoryInfo b : inventory) {/// Probably unnecessary part, gets price of book upon construction.
+                     //   if (b.getBookTitle().equals(title)) {//It is uneccesary because we will checkavailabality and get the price for
+                       //     price = b.getPrice();///each order anyway...
+                        //}
+                    //}
+                    OrderReceipt orderReceipt = new OrderReceipt(countOrders, "", id, title, 0, tickToSendBook, 0, 0);
                     orderReceipts[countOrders] = orderReceipt;
                     countOrders++;
                     System.out.println(orderReceipt.getPrice());
                 }
                 Customer customer = new Customer(name, id, address, distance, creditAmount, creditNum,orderReceipts);
                 String ApiName = "API Service number " + countCustomer;
-                APIService apiService = new APIService(ApiName, customer);
+                APIService apiService = new APIService(ApiName, customer.getCustomerReceiptList(),customer);
                 Thread APIserviceThread = new Thread(apiService);
                 APIserviceThread.start();
                 countCustomer++;
                 System.out.println(customer.toString());//test
+
+                Thread time = new Thread(timeService);//experiment
+                time.start();
             }
 
 
