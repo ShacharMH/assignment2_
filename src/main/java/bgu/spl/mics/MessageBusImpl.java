@@ -142,6 +142,7 @@ public class MessageBusImpl implements MessageBus {
         for (Class<? extends Broadcast> type : listOfTypesOfBroadcasts) {//for every type of broadcast, erase the micro service from its handling list
             hashBroadcastToMicroServicesQueue.get(type).remove(m);
         }
+        System.out.println(m.getName());//added to see if all MS are unregistered at the end.
 
     }
 

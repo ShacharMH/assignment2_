@@ -27,7 +27,7 @@ public class TimeService extends MicroService{
 
 	@Override
 	protected void initialize() {
-		while (currentTime<duration){
+		while (currentTime<=duration){
 			TickBroadcast tickBroadcast=new TickBroadcast(currentTime,duration);
 			currentTime++;
 			try{
@@ -37,6 +37,7 @@ public class TimeService extends MicroService{
 				System.out.println("Interrupted Time passing");
 			}
 			sendBroadcast(tickBroadcast);
+			System.out.println(" time now is "+currentTime);
 		}
 		this.terminate();
 		

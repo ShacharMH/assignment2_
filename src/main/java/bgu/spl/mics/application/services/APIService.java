@@ -38,6 +38,7 @@ private Customer customer;
 				for(OrderReceipt o:orderReceipts){ // should'nt it be "while" we may miss launching some of the orderBookEvent this way
 					if (o.getOrderTick()==CurrentTime)
 						 future=sendEvent(new OrderBookEvent(o.getBookTitle(),CurrentTime,customer));
+
 				}
 			}
 		});

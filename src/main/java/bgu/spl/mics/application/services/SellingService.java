@@ -48,6 +48,10 @@ public class SellingService extends MicroService{
 			CheckAvailabilityEvent checkAvailabilityEvent = new CheckAvailabilityEvent(OrderBookEventCallback.getBookName());
 			Future<Integer> checkAvailabilityEventFuture = sendEvent(checkAvailabilityEvent);
 
+//pc doesn't wait for checkAvailabilityEventFuture to be resolved, pc does not enter the scope of the
+// "if (checkAvailabilityEventFuture.isDone()) ", it goes straight to the "else", maybe need to change to "while", this is why the
+//only events that are sent right now are OrderBook and CheckAvailability
+
 			if (checkAvailabilityEventFuture.isDone()) { // CheckAvailabilityEvent is done;
 				OrderBookEventCallback.setBookPrice(CheckAvailabilityEventIsDone(OrderBookEventCallback.getCustomer(), checkAvailabilityEventFuture.get()));
 				orderVehicle = OrderBookEventCallback.getBookPrice() >= 0;

@@ -151,6 +151,7 @@ public abstract class MicroService implements Runnable {
      */
     protected final void terminate() {
         this.terminated = true;
+        MB.unregister(this);
     }
 
     /**
@@ -193,6 +194,7 @@ public abstract class MicroService implements Runnable {
                 callback.call(message);//changed from "this" to "message"
             }
         }
+
     }
 
 }
