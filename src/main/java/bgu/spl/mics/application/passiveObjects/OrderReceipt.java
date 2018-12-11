@@ -15,8 +15,8 @@ public class OrderReceipt {
 	private String title;
 	private int price;
 	private int orderTick; // tick in which customer ordered the book
-	private int proccessTick = -1; // tick in which the selling service started proccesssing the order
-	private int issuedTick = -1; //tick in which this receipt was issued (when corresponding event had been completed).
+	private int proccessTick;// = -1; // tick in which the selling service started proccesssing the order
+	private int issuedTick;// = -1; //tick in which this receipt was issued (when corresponding event had been completed).
 
 	public OrderReceipt(int orderId, String Seller, int customerId, String title,
 						int price, int orderTick, int proccessTick, int issuedTick) {

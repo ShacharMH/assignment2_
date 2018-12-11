@@ -189,7 +189,7 @@ public abstract class MicroService implements Runnable {
                 Broadcast broadcast = (Broadcast)message;
                 Callback callback = broadcastMap.get(broadcast);
                 if (callback == null)
-                    throw new NullPointerException("callback is null, e.g. there's no entry of event of class " + broadcast.getClass() + ".");
+                    throw new NullPointerException("callback is null, e.g. there's no entry of broadcast of class " + broadcast.getClass() + ".");
                 callback.call(this);
             }
         }

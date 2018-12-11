@@ -8,6 +8,8 @@ import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.passiveObjects.DeliveryVehicle;
 import bgu.spl.mics.application.passiveObjects.ResourcesHolder;
 
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -27,13 +29,13 @@ deals with getting the car to deliver the book.
 public class ResourceService extends MicroService{
 
 	private ResourcesHolder resourcesHolder;
-	private BlockingQueue<WaitingDelivery> onGoingDeliveryQueue;
+	private Queue<WaitingDelivery> onGoingDeliveryQueue;
 	private int CurrentTime;
 
 	public ResourceService(String name) {
 		super(name);
 		resourcesHolder = ResourcesHolder.getInstance();
-		onGoingDeliveryQueue = new LinkedBlockingQueue<>();
+		onGoingDeliveryQueue = new LinkedList<>();
 	}
 
 
@@ -81,7 +83,7 @@ public class ResourceService extends MicroService{
 		});
 	}
 
-	public static class WaitingDelivery {
+	private static class WaitingDelivery {
 		private Future<Boolean> future;
 		private DeliveryVehicle deliveryVehicle;
 		private AcquireVehicleEvent acquireVehicleEvent;

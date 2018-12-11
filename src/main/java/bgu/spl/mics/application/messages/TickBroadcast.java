@@ -7,7 +7,7 @@ public class TickBroadcast implements Broadcast {
     private final int duration;
 
     public TickBroadcast(int Time, int duration) {
-        CurrentTime = Time;
+        this.CurrentTime = Time;
         this.duration = duration;
     }
 

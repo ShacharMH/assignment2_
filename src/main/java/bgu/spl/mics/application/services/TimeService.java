@@ -17,6 +17,7 @@ public class TimeService extends MicroService{
 	private int speed;
 	private int duration;
 	private int currentTime;
+
 	public TimeService(int speed,int duration) {
 		super("TimeSevice");
 		this.speed=speed;
@@ -33,7 +34,7 @@ public class TimeService extends MicroService{
 				Thread.sleep(speed);
 			}
 			catch (InterruptedException e){
-				System.out.println("Interupted Time passing");
+				System.out.println("Interrupted Time passing");
 			}
 			sendBroadcast(tickBroadcast);
 		}

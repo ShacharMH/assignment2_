@@ -90,15 +90,14 @@ public class Customer {
 		return getAvailableCreditAmount()-amount;
 	}
 
-	// decreases amount in reservedAmount and returns the updated reservedAmount.
+	// decreases amount in reservedAmount
 	public void decreaseAmountBy(int num) {
-		int currentReservedAmount;
-		int updatedCurrentReservedAmount;
-		do {
-			currentReservedAmount = getAvailableCreditAmount();
-			updatedCurrentReservedAmount = currentReservedAmount + num;
-		} while (!reservedAmount.compareAndSet(currentReservedAmount,updatedCurrentReservedAmount));
-		//return getAvailableReservedAmount();
+			int currentReservedAmount;
+			int updatedCurrentReservedAmount;
+			do {
+				currentReservedAmount = getAvailableCreditAmount();
+				updatedCurrentReservedAmount = currentReservedAmount + num;
+			} while (!reservedAmount.compareAndSet(currentReservedAmount, updatedCurrentReservedAmount));
 	}
 
 	public int getAvailableReservedAmount() {
@@ -111,22 +110,29 @@ public class Customer {
 
 	// transfers amount from creditAmount to ReservedAmount. returns false if there's not enough money to reserve.
 	public synchronized boolean reserveAmount(int amount) {
-
-		if (checkIfThereIsEnoughMoneyInCreditCard(amount)<0)
-			return false;
-		creditAmount.set(creditAmount.get() - amount);
-		reservedAmount.set(reservedAmount.get() + amount);
-		return true;
+		synchronized (reservedAmount) {
+			synchronized (creditAmount) {
+				if (checkIfThereIsEnoughMoneyInCreditCard(amount)<0)
+					return false;
+				creditAmount.set(creditAmount.get() - amount);
+				reservedAmount.set(reservedAmount.get() + amount);
+				return true;
+			}
+		}
 	}
 
+	// do I really need this function?
 	// returns amount from reservedAmount to creditAmount. returns false if the amount to return is more than there is in reservedAmount
-	public synchronized boolean releaseAmount(int amount) {
-
-		if (amount > getAvailableReservedAmount())
-			return false;
-		reservedAmount.set(reservedAmount.get() - amount);
-		creditAmount.set(creditAmount.get() + amount);
-		return true;
+	public boolean releaseAmount(int amount) {
+		synchronized (reservedAmount) {
+			synchronized (creditAmount) {
+				if (amount > getAvailableReservedAmount())
+					return false;
+				reservedAmount.set(reservedAmount.get() - amount);
+				creditAmount.set(creditAmount.get() + amount);
+				return true;
+			}
+		}
 	}
 
 }
