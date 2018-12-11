@@ -6,13 +6,11 @@ import java.awt.print.Book;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.Wrapper;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.lang.String;
 
-import bgu.spl.mics.application.services.APIService;
-import bgu.spl.mics.application.services.InventoryService;
-import bgu.spl.mics.application.services.SellingService;
-import bgu.spl.mics.application.services.TimeService;
+import bgu.spl.mics.application.services.*;
 import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
 
@@ -26,6 +24,7 @@ import org.junit.Assert;
 public class BookStoreRunner implements Serializable {
 
     //this long int will act as an ID for serialization and deserialization of the class. I don't know if it's really needed.
+    private static HashMap<Integer,Customer> customerHashMap=new HashMap<>();//addition, for printing later on
     private static final long serialVersionUID = 1234L;
     private BookInventoryInfo[] inventory;
     private Gson gson = new GsonBuilder().create();
@@ -34,8 +33,28 @@ public class BookStoreRunner implements Serializable {
     public static void main(String[] args) {
         deserialize();
         // JsonReader jsonReader=new JsonReader();
+        printInTheEnd();
 
     }
+    private static void printInTheEnd(){
+      try {
+          String printList = "printList.txt";//printing the list of OrderReciepts
+          MoneyRegister moneyRegister = MoneyRegister.getInstance();
+          moneyRegister.printOrderReceipts(printList);
+          FileOutputStream CustFile = new FileOutputStream("CusmersMap.txt");
+          ObjectOutputStream CustObject=new ObjectOutputStream(CustFile);
+          CustObject.writeObject(customerHashMap);
+          CustObject.close();
+          CustFile.close();
+      }
+      catch (FileNotFoundException e){
+          System.out.println("file not found,check if file is in root directory");
+      }
+      catch (IOException e){
+          System.out.println("something is wrong with the input/output");
+      }
+    }
+
 
     private static void deserialize() {
         JsonParser jsonParser = new JsonParser();
@@ -147,9 +166,9 @@ public class BookStoreRunner implements Serializable {
             int numOfLogisticServices = services.get("logistics").getAsInt();
             for (int i = 0; i < numOfLogisticServices; i++) {
                 String name = "Logistics Service number" + i;
-                InventoryService NewInventory = new InventoryService(name);
-                Thread InventoryThread = new Thread(NewInventory);
-                InventoryThread.start();
+                LogisticsService NewLogistics= new LogisticsService(name);
+                Thread LogisticsThread = new Thread(NewLogistics);
+                LogisticsThread.start();
                 System.out.println(name);//test
             }
 
@@ -157,9 +176,9 @@ public class BookStoreRunner implements Serializable {
             int numOfResourcesServices = services.get("resourcesService").getAsInt();
             for (int i = 0; i < numOfResourcesServices; i++) {
                 String name = "Resources Service number" + i;
-                InventoryService NewInventory = new InventoryService(name);
-                Thread InventoryThread = new Thread(NewInventory);
-                InventoryThread.start();
+                ResourceService NewResources= new ResourceService(name);
+                Thread ResourcesThread = new Thread(NewResources);
+                ResourcesThread.start();
                 System.out.println(name);//test
             }
 
@@ -196,6 +215,7 @@ public class BookStoreRunner implements Serializable {
                     System.out.println(orderReceipt.getPrice());
                 }
                 Customer customer = new Customer(name, id, address, distance, creditAmount, creditNum,orderReceipts);
+                customerHashMap.put(id,customer);
                 String ApiName = "API Service number " + countCustomer;
                 APIService apiService = new APIService(ApiName, customer.getCustomerReceiptList(),customer);
                 Thread APIserviceThread = new Thread(apiService);

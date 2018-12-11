@@ -181,16 +181,16 @@ public abstract class MicroService implements Runnable {
             //according to it, fetch the corresponding callback from the corresponding hashMap.
             if (message instanceof Event) {
                 Event event = (Event)message;
-                Callback callback = eventMap.get(event);
+                Callback callback = eventMap.get(event.getClass());//added getClass
                 if (callback == null)
                     throw new NullPointerException("callback is null, e.g. there's no entry of event of class " + event.getClass() + ".");
-                callback.call(this);
+                callback.call(message);//changed from "this" to "message"
             } else {
                 Broadcast broadcast = (Broadcast)message;
-                Callback callback = broadcastMap.get(broadcast);
+                Callback callback = broadcastMap.get(broadcast.getClass());//added getClass to broadcast
                 if (callback == null)
-                    throw new NullPointerException("callback is null, e.g. there's no entry of broadcast of class " + broadcast.getClass() + ".");
-                callback.call(this);
+                    throw new NullPointerException("callback is null, e.g. there's no entry of event of class " + broadcast.getClass() + ".");
+                callback.call(message);//changed from "this" to "message"
             }
         }
     }
