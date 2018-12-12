@@ -131,6 +131,7 @@ public class SellingService extends MicroService{
 				}
 				else { // book is in stock!
 					moneyRegister.chargeCreditCard(customer,bookPrice);
+					System.out.println(getName() + " just chaged the credit card of " +customer.getName() + " for book "+ bookName);
 					onGoingCheckAvailabilityEventQueue.remove(waitingEvent);
 					AcquireVehicleEvent acquireVehicleEvent = new AcquireVehicleEvent(address,distance);
 					Future<Boolean> acquireVehicleEventFuture = sendEvent(acquireVehicleEvent);
@@ -159,15 +160,15 @@ public class SellingService extends MicroService{
 				if ((Boolean)waitingEvent.getFuture().get() != true)
 					throw new RuntimeException("AcquireVehicleEvent returned false. what on earth??!!");
 				onGoingAcquireVehicleEvent.remove(waitingEvent);
-				OrderReceipt orderReceipt = createReceipt(waitingEvent);
+				OrderReceipt orderReceipt = createAndFileReceipt(waitingEvent);
 				System.out.println(getName() + " created a Receipt!");
 				complete(waitingEvent.getOrderBookEvent(), orderReceipt);
-				System.out.println(getName() + " completed a OrderBookEvent successfully!");
+				System.out.println(getName() + " *********completed a OrderBookEvent successfully!*************");
 			}
 		}
 	}
 
-	private OrderReceipt createReceipt(WaitingEvent waitingEvent) {
+	private OrderReceipt createAndFileReceipt(WaitingEvent waitingEvent) {
 		Customer customer = waitingEvent.getOrderBookEvent().getCustomer();
 		String bookName = waitingEvent.getOrderBookEvent().getBookName();
 		int price = waitingEvent.getOrderBookEvent().getBookPrice();
@@ -175,6 +176,7 @@ public class SellingService extends MicroService{
 		OrderReceipt orderReceipt = new OrderReceipt((CurrentTime*customer.getId())/17,getName(),customer.getId(),
 													bookName,price,waitingEvent.getOrderBookEvent().getOrderTick(),
 													waitingEvent.getOrderBookEvent().getProccessTick(),CurrentTime);
+		moneyRegister.file(orderReceipt);
 		return orderReceipt;
 	}
 
