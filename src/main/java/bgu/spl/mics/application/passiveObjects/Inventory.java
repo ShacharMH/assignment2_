@@ -88,9 +88,11 @@ public class Inventory {
 				int result = checkAvailabiltyAndGetPrice(book);
 				if (result > 0) {
 					myInventory.get(book).decreaseAmount();
+					System.out.println(book+" was successfully taken");
 					return OrderResult.SUCCESSFULLY_TAKEN;
 				}
 				else {
+					System.out.println(book+" is not in stock");
 					return OrderResult.NOT_IN_STOCK;
 				}
 			} else {

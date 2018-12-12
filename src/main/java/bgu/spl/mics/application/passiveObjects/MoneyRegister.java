@@ -74,7 +74,7 @@ public class MoneyRegister {
      */
 
 	public void chargeCreditCard(Customer c, int amount) {
-		c.decreaseAmountBy(amount);
+		c.pay(amount);
 		int currentTotal;
 		int updatedCurrentTotal;
 		do {

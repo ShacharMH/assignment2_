@@ -2,6 +2,7 @@ package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.CheckAvailabilityEvent;
+import bgu.spl.mics.application.messages.GetBookPriceEvent;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.passiveObjects.Inventory;
 
@@ -42,11 +43,19 @@ public class InventoryService extends MicroService{
 
 			if (price != -1) { // there is a copy in stock!
 				OrderResult orderResult = inventory.take(bookName); // we try to take it
-				if (orderResult == OrderResult.SUCCESSFULLY_TAKEN)
+				if (orderResult == OrderResult.SUCCESSFULLY_TAKEN) {
+					System.out.println(getName()+" is about to complete CheckInventoryEvent regarding book " + bookName);
 					complete(CheckAvailabilityCallback, price); // we successfully took it!
+				}
 				else // book not in stock anymore :(
 					complete(CheckAvailabilityCallback,-1);
 				}
+		});
+
+		subscribeEvent(GetBookPriceEvent.class, getBookPriceEventCallback -> {
+			// this event returns -1 if book is not in stock, else returns its price
+			complete(getBookPriceEventCallback, inventory.checkAvailabiltyAndGetPrice(getBookPriceEventCallback.getBookName()));
+			System.out.println(getName()+" finished a GetBookPriceEvent!");
 		});
 
 		subscribeBroadcast(TickBroadcast.class, TickBroadcastCallback -> {

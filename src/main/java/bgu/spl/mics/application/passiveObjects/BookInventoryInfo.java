@@ -1,8 +1,5 @@
 package bgu.spl.mics.application.passiveObjects;
 
-import java.awt.print.Book;
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * Passive data-object representing a information about a certain book in the inventory.
  * You must not alter any of the given public methods of this class. 

@@ -1,5 +1,8 @@
 package bgu.spl.mics.application.passiveObjects;
 
+import java.util.ArrayList;
+
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -17,8 +20,9 @@ public class Customer {
 	private AtomicInteger creditAmount;
 	private int creditNumber;
 	private OrderReceipt[] orderReceipts;
+	private AtomicInteger sumOfReservedAmount = new AtomicInteger(0);
 
-	private AtomicInteger reservedAmount = new AtomicInteger(0);
+	private ArrayList<Integer> reservedAmount = new ArrayList<>();
 	//private Object lock = new Object();
 
 
@@ -78,6 +82,10 @@ public class Customer {
 	public int getAvailableCreditAmount() {
 		return creditAmount.get();
 	}
+
+	public int getReservedAmount() {
+		return sumOfReservedAmount.get();
+	}
 	
 	/**
      * Retrieves this customers credit card serial number.    
@@ -91,48 +99,58 @@ public class Customer {
 	}
 
 	// decreases amount in reservedAmount
-	public void decreaseAmountBy(int num) {
+	// this should work but in this implementation each sum is going to get touched by one micro-serice so the implementation can be simpler
+	public void pay(int amount) {
+		/*
 			int currentReservedAmount;
 			int updatedCurrentReservedAmount;
 			do {
 				currentReservedAmount = getAvailableCreditAmount();
 				updatedCurrentReservedAmount = currentReservedAmount + num;
-			} while (!reservedAmount.compareAndSet(currentReservedAmount, updatedCurrentReservedAmount));
+			} while (!reservedAmount.get(book).compareAndSet(currentReservedAmount, updatedCurrentReservedAmount));
+			*/
+		synchronized (reservedAmount) {
+			reservedAmount.remove(Integer.valueOf(amount));
+		}
+		sumOfReservedAmount.addAndGet(-amount);
 	}
 
+	/*
 	public int getAvailableReservedAmount() {
 		return reservedAmount.get();
 	}
+	*/
 
 	public String toString(){
 		return name+" id is"+ Id+" distance is"+distance +" "+address+" ,credit amount "+creditAmount+" ,credit number is "+creditNumber+orderReceipts[0].getBookTitle();
 	}
 
 	// transfers amount from creditAmount to ReservedAmount. returns false if there's not enough money to reserve.
-	public synchronized boolean reserveAmount(int amount) {
-		synchronized (reservedAmount) {
-			synchronized (creditAmount) {
-				if (checkIfThereIsEnoughMoneyInCreditCard(amount)<0)
-					return false;
-				creditAmount.set(creditAmount.get() - amount);
-				reservedAmount.set(reservedAmount.get() + amount);
-				return true;
-			}
+	public boolean reserveAmount(int amount) {
+		synchronized (creditAmount) {
+			if (checkIfThereIsEnoughMoneyInCreditCard(amount) < 0)
+				return false;
 		}
+		creditAmount.addAndGet(-amount);
+		reservedAmount.add(amount);
+		sumOfReservedAmount.addAndGet(amount);
+		return true;
 	}
 
-	// do I really need this function?
-	// returns amount from reservedAmount to creditAmount. returns false if the amount to return is more than there is in reservedAmount
-	public boolean releaseAmount(int amount) {
+	// returns amount from reservedAmount to creditAmount.
+	public void releaseAmount(int amount) {
 		synchronized (reservedAmount) {
-			synchronized (creditAmount) {
-				if (amount > getAvailableReservedAmount())
-					return false;
-				reservedAmount.set(reservedAmount.get() - amount);
-				creditAmount.set(creditAmount.get() + amount);
-				return true;
-			}
+			reservedAmount.remove(Integer.valueOf(amount));
 		}
+		sumOfReservedAmount.addAndGet(-amount);
+		creditAmount.addAndGet(amount);
+		/*
+		int currentCreditAmount;
+		int updatedCurrentCreditAmount;
+		do {
+			currentCreditAmount = creditAmount.get();
+			updatedCurrentCreditAmount = currentCreditAmount + amount;
+		} while (!creditAmount.compareAndSet(currentCreditAmount,updatedCurrentCreditAmount));
+		*/
 	}
-
 }

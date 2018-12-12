@@ -25,9 +25,7 @@ public class BookStoreRunner implements Serializable {
 
     //this long int will act as an ID for serialization and deserialization of the class. I don't know if it's really needed.
     private static HashMap<Integer,Customer> customerHashMap=new HashMap<>();//addition, for printing later on
-    private static final long serialVersionUID = 1234L;
-    private BookInventoryInfo[] inventory;
-    private Gson gson = new GsonBuilder().create();
+
     // need to add all the other passive object when time comes :)
 
     public static void main(String[] args) {
@@ -43,7 +41,7 @@ public class BookStoreRunner implements Serializable {
           moneyRegister.printOrderReceipts(printList);
           FileOutputStream CustFile = new FileOutputStream("CusmersMap.txt");
           ObjectOutputStream CustObject=new ObjectOutputStream(CustFile);
-          CustObject.writeObject(customerHashMap);
+          //CustObject.writeObject(customerHashMap);
           CustObject.close();
           CustFile.close();
       }
