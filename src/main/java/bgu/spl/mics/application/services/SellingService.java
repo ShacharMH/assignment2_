@@ -50,13 +50,13 @@ public class SellingService extends MicroService{
 			CheckIfGetBookPriceEventIsDoneAndSendCheckAvailabilityEventIfConditionsApply();
 			CheckIfCheckAvailabilityEventIsDoneAndAcquireVehicleIfConditionsApply();
 			CheckIfAcquireVehicleEventIsDoneAndCompleteOrderBookEventIfConditionsApply();
+
 		});
 
 		subscribeBroadcast(TickBroadcast.class, TickBroadcastCallback -> {
 			this.CurrentTime = TickBroadcastCallback.getCurrentTime();
 			if (TickBroadcastCallback.getCurrentTime() == TickBroadcastCallback.getDuration()) terminate();
 		});
-		
 	}
 
 	/* do:
@@ -69,6 +69,7 @@ public class SellingService extends MicroService{
 	private void CheckIfGetBookPriceEventIsDoneAndSendCheckAvailabilityEventIfConditionsApply() {
 
 		for (WaitingEvent waitingEvent: onGoingGetBookPriceEvent) {
+			System.out.println(getName()+" iterates over onGoingGetBookPriceEvent");
 
 			if (waitingEvent.getFuture().isDone()) {
 				int price = (int)waitingEvent.future.get();
@@ -89,10 +90,11 @@ public class SellingService extends MicroService{
 					}
 					CheckAvailabilityEvent checkAvailabilityEvent = new CheckAvailabilityEvent(bookName);
 					Future<Integer> checkAvailabilityEventFuture = sendEvent(checkAvailabilityEvent);
-					System.out.println(getName() + " sent a CheckAvailabilityEvent!");
+					System.out.println(getName() + " sent a CheckAvailabilityEvent for book: " + bookName);
 					onGoingGetBookPriceEvent.remove(waitingEvent);
 					WaitingEvent availabilityWaitingEvent = new WaitingEvent(checkAvailabilityEventFuture,checkAvailabilityEvent,waitingEvent.getOrderBookEvent());
 					onGoingCheckAvailabilityEventQueue.add(availabilityWaitingEvent);
+					System.out.println(getName()+" added a new availabilityWaitingEvent!");
 				}
 				if (price == -1 || customer.getAvailableCreditAmount()+customer.getReservedAmount() < price) {
 					complete(waitingEvent.orderBookEvent, null);
@@ -112,35 +114,41 @@ public class SellingService extends MicroService{
 			ii. complete order book event with null.
 	 */
 	private void CheckIfCheckAvailabilityEventIsDoneAndAcquireVehicleIfConditionsApply() {
+		//boolean atLeastOneEnded = false;
+		//while(!atLeastOneEnded) {
+			for (WaitingEvent waitingEvent : onGoingCheckAvailabilityEventQueue) {
+
+				System.out.println(getName() + " iterates over onGoingCheckAvailabilityEventQueue ");
+				System.out.println("is the WaitingEvent we are  currently working on done? " + waitingEvent.getFuture().isDone());
 
 
-		for (WaitingEvent waitingEvent: onGoingCheckAvailabilityEventQueue) {
+				Customer customer = waitingEvent.getOrderBookEvent().getCustomer();
+				int bookPrice = waitingEvent.getOrderBookEvent().getBookPrice();
+				String bookName = waitingEvent.getOrderBookEvent().getBookName();
+				String address = customer.getAddress();
+				int distance = customer.getDistance();
 
-			Customer customer = waitingEvent.getOrderBookEvent().getCustomer();
-			int bookPrice = waitingEvent.getOrderBookEvent().getBookPrice();
-			String bookName = waitingEvent.getOrderBookEvent().getBookName();
-			String address = customer.getAddress();
-			int distance = customer.getDistance();
-
-			if (waitingEvent.getFuture().isDone()) {
-				if ((int)waitingEvent.getFuture().get() == -1) { // so book is not in stock
-					customer.releaseAmount(bookPrice);
-					complete(waitingEvent.getOrderBookEvent(), null);
-					System.out.println(getName() + " just finished an OrderBookEvent with null :(");
-					onGoingCheckAvailabilityEventQueue.remove(waitingEvent);
-				}
-				else { // book is in stock!
-					moneyRegister.chargeCreditCard(customer,bookPrice);
-					System.out.println(getName() + " just chaged the credit card of " +customer.getName() + " for book "+ bookName);
-					onGoingCheckAvailabilityEventQueue.remove(waitingEvent);
-					AcquireVehicleEvent acquireVehicleEvent = new AcquireVehicleEvent(address,distance);
-					Future<Boolean> acquireVehicleEventFuture = sendEvent(acquireVehicleEvent);
-					System.out.println(getName() + " sent an AcquireVehicleEvent!");
-					WaitingEvent acquireVehicleWaitingEvent = new WaitingEvent(acquireVehicleEventFuture,acquireVehicleEvent, waitingEvent.getOrderBookEvent());
-					onGoingAcquireVehicleEvent.add(acquireVehicleWaitingEvent);
+				if (waitingEvent.getFuture().isDone()) {
+					//atLeastOneEnded = true;
+					System.out.println(getName() + ": the Future object of CheckAvailabilityEvent of book " + bookName + " is done!");
+					if ((int) waitingEvent.getFuture().get() == -1) { // so book is not in stock
+						customer.releaseAmount(bookPrice);
+						complete(waitingEvent.getOrderBookEvent(), null);
+						System.out.println(getName() + " just finished an OrderBookEvent with null :(");
+						onGoingCheckAvailabilityEventQueue.remove(waitingEvent);
+					} else { // book is in stock!
+						moneyRegister.chargeCreditCard(customer, bookPrice);
+						System.out.println(getName() + " just charged the credit card of " + customer.getName() + " for book " + bookName);
+						onGoingCheckAvailabilityEventQueue.remove(waitingEvent);
+						AcquireVehicleEvent acquireVehicleEvent = new AcquireVehicleEvent(address, distance);
+						Future<Boolean> acquireVehicleEventFuture = sendEvent(acquireVehicleEvent);
+						System.out.println(getName() + " sent an AcquireVehicleEvent!");
+						WaitingEvent acquireVehicleWaitingEvent = new WaitingEvent(acquireVehicleEventFuture, acquireVehicleEvent, waitingEvent.getOrderBookEvent());
+						onGoingAcquireVehicleEvent.add(acquireVehicleWaitingEvent);
+					}
 				}
 			}
-		}
+		//}
 	}
 
 	/* do:
@@ -155,6 +163,7 @@ public class SellingService extends MicroService{
 
 		for(WaitingEvent waitingEvent: onGoingAcquireVehicleEvent) {
 
+			System.out.println(getName() + " iterates over onGoingAcquireVehicleEvent ");
 
 			if (waitingEvent.getFuture().isDone()) {
 				if ((Boolean)waitingEvent.getFuture().get() != true)

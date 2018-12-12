@@ -44,11 +44,13 @@ public class InventoryService extends MicroService{
 			if (price != -1) { // there is a copy in stock!
 				OrderResult orderResult = inventory.take(bookName); // we try to take it
 				if (orderResult == OrderResult.SUCCESSFULLY_TAKEN) {
-					System.out.println(getName()+" is about to complete CheckInventoryEvent regarding book " + bookName);
+					System.out.println(getName()+" finished CheckInventoryEvent regarding book " + bookName+ " with result "+ price);
 					complete(CheckAvailabilityCallback, price); // we successfully took it!
 				}
-				else // book not in stock anymore :(
-					complete(CheckAvailabilityCallback,-1);
+					else { // book not in stock anymore :(
+					System.out.println(getName()+" finished CheckInventoryEvent regarding book " + bookName+ " with result -1");
+					complete(CheckAvailabilityCallback, -1);
+					}
 				}
 		});
 

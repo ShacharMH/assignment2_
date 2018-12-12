@@ -88,7 +88,7 @@ public class Inventory {
 				int result = checkAvailabiltyAndGetPrice(book);
 				if (result > 0) {
 					myInventory.get(book).decreaseAmount();
-					System.out.println(book+" was successfully taken");
+					System.out.println(book+" was successfully taken, copies left in stock: " + myInventory.get(book).getAmountInInventory());
 					return OrderResult.SUCCESSFULLY_TAKEN;
 				}
 				else {
@@ -115,10 +115,9 @@ public class Inventory {
 	 */
 	public int checkAvailabiltyAndGetPrice(String book) {
 		BookInventoryInfo tmpbook = myInventory.get(book);
-		if (tmpbook.getAmountInInventory() > 0){
+		if (tmpbook.getAmountInInventory() > 0) {
 			return tmpbook.getPrice();
-		}
-		else {
+		} else {
 			return -1;
 		}
 	}
