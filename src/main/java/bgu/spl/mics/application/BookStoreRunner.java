@@ -9,11 +9,15 @@ import java.sql.Wrapper;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.lang.String;
+import java.util.concurrent.locks.Lock;
 
 import bgu.spl.mics.application.services.*;
 import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
-
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonArray;
 import org.junit.Assert;
 
 
@@ -21,29 +25,55 @@ import org.junit.Assert;
  * create the different instances of the objects, and run the system.
  * In the end, you should output serialized objects.
  */
-public class BookStoreRunner implements Serializable {
+public class BookStoreRunner implements java.io.Serializable{
 
     //this long int will act as an ID for serialization and deserialization of the class. I don't know if it's really needed.
     private static HashMap<Integer,Customer> customerHashMap=new HashMap<>();//addition, for printing later on
+    private static Object randomLock=new Object();//just an object so deserialize will be performed before printInTheEnd
 
     // need to add all the other passive object when time comes :)
 
     public static void main(String[] args) {
-        deserialize();
-        // JsonReader jsonReader=new JsonReader();
-        printInTheEnd();
+        synchronized (randomLock) {
+            deserialize();
+            // JsonReader jsonReader=new JsonReader();
+            printInTheEnd();
+        }
 
     }
     private static void printInTheEnd(){
       try {
-          String printList = "printList.txt";//printing the list of OrderReciepts
+          //********printing the list of OrderReciepts
+          String printList = "printList.txt";//file name needs to be changed to "args[3]"
           MoneyRegister moneyRegister = MoneyRegister.getInstance();
           moneyRegister.printOrderReceipts(printList);
-          FileOutputStream CustFile = new FileOutputStream("CusmersMap.txt");
+          //********printing Hashmap of Customers
+          FileOutputStream CustFile = new FileOutputStream("CustomersMap.txt");//file name needs to be changed to "args[1]"
           ObjectOutputStream CustObject=new ObjectOutputStream(CustFile);
-          //CustObject.writeObject(customerHashMap);
+          CustObject.writeObject(customerHashMap);
           CustObject.close();
           CustFile.close();
+          //*********printing books and their remained amount
+          Inventory inventory=Inventory.getInstance();
+          inventory.printInventoryToFile("inventory.txt");//file name needs to be changed to "args[2]"
+          //*********print MoneyRegister object
+          FileOutputStream MoneyRegisterFile = new FileOutputStream("MoneyRegister.txt");//file name needs to be changed to "args[4]"
+          ObjectOutputStream MoneyRegisterObject=new ObjectOutputStream(MoneyRegisterFile);
+          MoneyRegisterObject.writeObject(moneyRegister);
+          MoneyRegisterObject.close();
+         // MoneyRegisterFile.close();
+
+          //****testing output
+          FileInputStream Test= new FileInputStream("CustomersMap.txt");
+          Reader reader=new InputStreamReader(Test);
+          JsonParser jsonParser=new JsonParser();
+          JsonElement jsonElement=jsonParser.parse(reader);
+          JsonObject jsonObject=jsonElement.getAsJsonObject();
+          JsonObject customer=jsonObject.get("0").getAsJsonObject();
+          String name= customer.get("name").getAsString();
+          System.out.println(name);
+
+
       }
       catch (FileNotFoundException e){
           System.out.println("file not found,check if file is in root directory");
@@ -73,7 +103,7 @@ public class BookStoreRunner implements Serializable {
 
 
         try {
-            Object object = jsonParser.parse(new FileReader("input.json"));
+            Object object = jsonParser.parse(new FileReader("input.json"));////file name needs to be changed to "args[0]"
             JsonObject jsonObject = (JsonObject) object;
 
 
