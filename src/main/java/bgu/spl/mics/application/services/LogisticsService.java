@@ -32,6 +32,7 @@ public class LogisticsService extends MicroService {
 			int distance = DeliveryEventCallback.getDistance();
 			DeliveryEventCallback.getDeliveryVehicle().deliver(address,distance);
 			complete(DeliveryEventCallback, true);
+			System.out.println(getName()+" completed a delivery");
 		});
 
 		subscribeBroadcast(TickBroadcast.class, TickBroadcastCallback -> {

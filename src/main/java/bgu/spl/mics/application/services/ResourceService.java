@@ -15,9 +15,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * ResourceService is in charge of the store resources - the delivery vehicles.
- * Holds a reference to the {@link ResourceHolder} singleton of the store.
+ * Holds a reference to the {@link //ResourceHolder} singleton of the store.
  * This class may not hold references for objects which it is not responsible for:
- * {@link MoneyRegister}, {@link Inventory}.
+ * {@link //MoneyRegister}, {@link //Inventory}.
  * 
  * You can add private fields and public methods to this class.
  * You MAY change constructor signatures and even add new public constructors.
@@ -29,13 +29,13 @@ deals with getting the car to deliver the book.
 public class ResourceService extends MicroService{
 
 	private ResourcesHolder resourcesHolder;
-	private Queue<WaitingDelivery> onGoingDeliveryQueue;
+	//private Queue<WaitingDelivery> onGoingDeliveryQueue;
 	private int CurrentTime;
 
 	public ResourceService(String name) {
 		super(name);
 		resourcesHolder = ResourcesHolder.getInstance();
-		onGoingDeliveryQueue = new LinkedList<>();
+		//onGoingDeliveryQueue = new LinkedList<>();
 	}
 
 
@@ -48,6 +48,15 @@ public class ResourceService extends MicroService{
 			if (TickBroadcastCallback.getCurrentTime() == TickBroadcastCallback.getDuration()) terminate();
 		});
 
+		subscribeEvent(AcquireVehicleEvent.class, AcquireVehicleEventCallback -> {
+			Future<DeliveryVehicle> deliveryVehicleFuture = resourcesHolder.acquireVehicle();
+			while(!deliveryVehicleFuture.isDone());
+			DeliveryVehicle deliveryVehicle = deliveryVehicleFuture.get();
+			complete(AcquireVehicleEventCallback, deliveryVehicle);
+			System.out.println(getName()+" acquired a vehicle");
+		});
+
+		/*
 		subscribeEvent(AcquireVehicleEvent.class, AcquireVehicleEventCallBack -> {
 			/*
 			1. try to acquire a vehicle
@@ -60,6 +69,7 @@ public class ResourceService extends MicroService{
 					ii. return to (1).
 			 */
 
+		/*
 			Future<DeliveryVehicle> deliveryVehicleFuture = resourcesHolder.acquireVehicle();
 			boolean successful = false;
 			while (!successful) {
@@ -80,9 +90,18 @@ public class ResourceService extends MicroService{
 					 */
 				}
 			}
+/*
+			for (WaitingDelivery waitingDelivery: onGoingDeliveryQueue) {
+				if (waitingDelivery.getFuture().isDone()) {
+					complete(waitingDelivery.getAcquireVehicleEvent(), true);
+					onGoingDeliveryQueue.remove(waitingDelivery);
+					System.out.println(getName()+" just completed a DeliveryEvent");
+				}
+			}
 		});
 	}
-
+	*/
+/*
 	private static class WaitingDelivery {
 		private Future<Boolean> future;
 		private DeliveryVehicle deliveryVehicle;
@@ -106,7 +125,7 @@ public class ResourceService extends MicroService{
 			return acquireVehicleEvent;
 		}
 	}
-
+/*
 	private boolean releaseVehicles() {
 		boolean isReleased = false;
 		for (WaitingDelivery waitingDelivery : onGoingDeliveryQueue) {

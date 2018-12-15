@@ -80,7 +80,8 @@ public class MoneyRegister {
 		do {
 			currentTotal = total.get();
 			updatedCurrentTotal = currentTotal + amount;
-		} while (total.compareAndSet(currentTotal,updatedCurrentTotal));
+		} while (!total.compareAndSet(currentTotal,updatedCurrentTotal));
+		System.out.println("just charged the credit card of " + c.getName()+" for "+amount+".");
 	}
 	
 	/**

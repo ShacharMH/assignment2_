@@ -62,7 +62,7 @@ public class ResourcesHolder {
             System.out.println("Interrupted in acquiring a vehicle");
         }
         synchronized (result) {///Atomic reference is problematic with Future object, therefore I used synchronize
-            Future<DeliveryVehicle> ans = new Future<DeliveryVehicle>();
+            Future<DeliveryVehicle> ans = new Future<>();
             ans.resolve(result);
             return ans;
         }

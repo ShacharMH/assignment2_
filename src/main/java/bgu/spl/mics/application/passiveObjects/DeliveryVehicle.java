@@ -42,12 +42,9 @@ public class DeliveryVehicle {
      * @param distance	The distance from the store to the customer.
      */
 	public void deliver(String address, int distance) {
-		synchronized (this) {
-			int time = distance / getSpeed();
-			try {
-				Thread.sleep(time);
-			} catch (InterruptedException e) {
-			}
-		}
+		int time = distance / getSpeed();
+		try {
+			Thread.sleep(time);
+		} catch (InterruptedException e) {}
 	}
 }
