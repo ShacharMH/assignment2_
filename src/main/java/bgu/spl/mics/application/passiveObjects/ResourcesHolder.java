@@ -75,13 +75,13 @@ public class ResourcesHolder {
      * @param vehicle	{@link DeliveryVehicle} to be released.
      */
     public void releaseVehicle(DeliveryVehicle vehicle) {
-        listOfCars.add(vehicle);
-        if (listOfCars.size() > numOfCars) {
+
             synchronized (this) {
+                listOfCars.add(vehicle);
                 if (listOfCars.size() > numOfCars)
                     throw new IllegalArgumentException("there are more vehicles in listOfCars than was loaded");
             }
-        }
+
     }
 
     /**

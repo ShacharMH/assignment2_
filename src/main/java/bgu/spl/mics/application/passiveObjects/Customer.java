@@ -20,9 +20,9 @@ public class Customer {
 	private AtomicInteger creditAmount;
 	private int creditNumber;
 	private OrderReceipt[] orderReceipts;
-	private AtomicInteger sumOfReservedAmount = new AtomicInteger(0);
+	private AtomicInteger sumOfReservedAmount = new AtomicInteger(0);//AMOUNT OF MONEY CUSTOMER SPENT ON BOOKS OVERALL
 
-	private ArrayList<Integer> reservedAmount = new ArrayList<>();
+	private ArrayList<Integer> reservedAmount = new ArrayList<>();//SAVES EVERY PURCHASE OF CUSTOMER
 	//private Object lock = new Object();
 
 
@@ -109,6 +109,7 @@ public class Customer {
 				updatedCurrentReservedAmount = currentReservedAmount + num;
 			} while (!reservedAmount.get(book).compareAndSet(currentReservedAmount, updatedCurrentReservedAmount));
 			*/
+
 		synchronized (reservedAmount) {
 			reservedAmount.remove(Integer.valueOf(amount));
 		}
