@@ -83,22 +83,23 @@ public class Inventory {
 	   other threads can't touch it: https://www.youtube.com/watch?v=otCpCn0l4Wo
 	 */
 	public OrderResult take (String book) {
-		synchronized ((myInventory.get(book))) {
+
 			if (isLoaded) {
-				int result = checkAvailabiltyAndGetPrice(book);
-				if (result > 0) {
-					myInventory.get(book).decreaseAmount();
-					System.out.println(book+" was successfully taken, copies left in stock: " + myInventory.get(book).getAmountInInventory());
-					return OrderResult.SUCCESSFULLY_TAKEN;
-				}
-				else {
-					System.out.println(book+" is not in stock");
-					return OrderResult.NOT_IN_STOCK;
+				synchronized ((myInventory.get(book))) {
+					int result = checkAvailabiltyAndGetPrice(book);
+					if (result > 0) {
+						myInventory.get(book).decreaseAmount();
+						System.out.println(book + " was successfully taken, copies left in stock: " + myInventory.get(book).getAmountInInventory());
+						return OrderResult.SUCCESSFULLY_TAKEN;
+					} else {
+						System.out.println(book + " is not in stock");
+						return OrderResult.NOT_IN_STOCK;
+					}
 				}
 			} else {
 				return null;
 			}
-		}
+
 	}
 	
 	
@@ -114,7 +115,7 @@ public class Inventory {
 	1. doesn't change any object
 	 */
 	public int checkAvailabiltyAndGetPrice(String book) {
-		BookInventoryInfo tmpbook = myInventory.get(book);
+		BookInventoryInfo tmpbook = myInventory.getOrDefault(book, new BookInventoryInfo("default", 0, 0));
 		if (tmpbook.getAmountInInventory() > 0) {
 			return tmpbook.getPrice();
 		} else {

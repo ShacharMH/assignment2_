@@ -20,6 +20,7 @@ public class APIService extends MicroService{
 private OrderReceipt[] orderReceipts;
 volatile int CurrentTime=0;
 private Customer customer;
+int receiptId = 1;
 
 	public APIService(String name,OrderReceipt[] orders,Customer customer) {
 		super(name);
@@ -31,14 +32,18 @@ private Customer customer;
 	protected void initialize() {
 		subscribeBroadcast(TickBroadcast.class, TickBroadcastCallback -> {
 			CurrentTime=TickBroadcastCallback.getCurrentTime();
-			if (TickBroadcastCallback.getCurrentTime()==TickBroadcastCallback.getDuration()) terminate();
+			if (TickBroadcastCallback.getCurrentTime()==TickBroadcastCallback.getDuration()) {
+				System.out.println(getName()+" is being terminated");
+				terminate();
+			}
 			else
 			{
 				Future<OrderReceipt> future=new Future<>();
 				for(OrderReceipt o:orderReceipts){ // should'nt it be "while" we may miss launching some of the orderBookEvent this way
-					if (o.getOrderTick()==CurrentTime)
-						 future=sendEvent(new OrderBookEvent(o.getBookTitle(),CurrentTime,customer));
-
+					if (o.getOrderTick()==CurrentTime) {
+						future = sendEvent(new OrderBookEvent(o.getBookTitle(), CurrentTime, customer, customer.getId()*receiptId));
+						receiptId++;
+					}
 				}
 			}
 		});

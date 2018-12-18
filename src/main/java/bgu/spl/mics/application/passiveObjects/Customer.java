@@ -1,7 +1,6 @@
 package bgu.spl.mics.application.passiveObjects;
 
-import java.util.ArrayList;
-
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,10 +20,7 @@ public class Customer {
 	private int creditNumber;
 	private OrderReceipt[] orderReceipts;
 	private AtomicInteger sumOfReservedAmount = new AtomicInteger(0);
-
-	private ArrayList<Integer> reservedAmount = new ArrayList<>();
-	//private Object lock = new Object();
-
+	private List<Integer> reservedAmount = new CopyOnWriteArrayList<>();
 
 
 	public Customer(String name, int Id, String address, int distance, int creditAmount, int creditNumber, OrderReceipt[] orderReceipts) {
@@ -101,25 +97,10 @@ public class Customer {
 	// decreases amount in reservedAmount
 	// this should work but in this implementation each sum is going to get touched by one micro-serice so the implementation can be simpler
 	public void pay(int amount) {
-		/*
-			int currentReservedAmount;
-			int updatedCurrentReservedAmount;
-			do {
-				currentReservedAmount = getAvailableCreditAmount();
-				updatedCurrentReservedAmount = currentReservedAmount + num;
-			} while (!reservedAmount.get(book).compareAndSet(currentReservedAmount, updatedCurrentReservedAmount));
-			*/
-		synchronized (reservedAmount) {
-			reservedAmount.remove(Integer.valueOf(amount));
-		}
+		reservedAmount.remove(Integer.valueOf(amount));
 		sumOfReservedAmount.addAndGet(-amount);
 	}
 
-	/*
-	public int getAvailableReservedAmount() {
-		return reservedAmount.get();
-	}
-	*/
 
 	public String toString(){
 		return name+" id is"+ Id+" distance is"+distance +" "+address+" ,credit amount "+creditAmount+" ,credit number is "+creditNumber+orderReceipts[0].getBookTitle();
@@ -139,18 +120,8 @@ public class Customer {
 
 	// returns amount from reservedAmount to creditAmount.
 	public void releaseAmount(int amount) {
-		synchronized (reservedAmount) {
-			reservedAmount.remove(Integer.valueOf(amount));
-		}
+		reservedAmount.remove(Integer.valueOf(amount));
 		sumOfReservedAmount.addAndGet(-amount);
 		creditAmount.addAndGet(amount);
-		/*
-		int currentCreditAmount;
-		int updatedCurrentCreditAmount;
-		do {
-			currentCreditAmount = creditAmount.get();
-			updatedCurrentCreditAmount = currentCreditAmount + amount;
-		} while (!creditAmount.compareAndSet(currentCreditAmount,updatedCurrentCreditAmount));
-		*/
 	}
 }

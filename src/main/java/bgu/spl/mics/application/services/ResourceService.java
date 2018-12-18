@@ -4,6 +4,7 @@ import bgu.spl.mics.Future;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.AcquireVehicleEvent;
 import bgu.spl.mics.application.messages.DeliveryEvent;
+import bgu.spl.mics.application.messages.ReleaseVehicleEvent;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.passiveObjects.DeliveryVehicle;
 import bgu.spl.mics.application.passiveObjects.ResourcesHolder;
@@ -31,7 +32,6 @@ public class ResourceService extends MicroService{
 	private ResourcesHolder resourcesHolder;
 	//private Queue<WaitingDelivery> onGoingDeliveryQueue;
 	private int CurrentTime;
-
 	public ResourceService(String name) {
 		super(name);
 		resourcesHolder = ResourcesHolder.getInstance();
@@ -45,15 +45,29 @@ public class ResourceService extends MicroService{
 
 		subscribeBroadcast(TickBroadcast.class, TickBroadcastCallback -> {
 			this.CurrentTime = TickBroadcastCallback.getCurrentTime();
-			if (TickBroadcastCallback.getCurrentTime() == TickBroadcastCallback.getDuration()) terminate();
+			if (TickBroadcastCallback.getCurrentTime() == TickBroadcastCallback.getDuration()) {
+				System.out.println(getName()+" is being terminated");
+				terminate();
+			}
 		});
 
 		subscribeEvent(AcquireVehicleEvent.class, AcquireVehicleEventCallback -> {
 			Future<DeliveryVehicle> deliveryVehicleFuture = resourcesHolder.acquireVehicle();
 			while(!deliveryVehicleFuture.isDone());
 			DeliveryVehicle deliveryVehicle = deliveryVehicleFuture.get();
+			System.out.println(getName()+": the vehicle supplied is: " + deliveryVehicle.toString());
 			complete(AcquireVehicleEventCallback, deliveryVehicle);
 			System.out.println(getName()+" acquired a vehicle");
+		});
+
+		subscribeEvent(ReleaseVehicleEvent.class, ReleaseVehicleEventCallback -> {
+			DeliveryVehicle deliveryVehicle = ReleaseVehicleEventCallback.getDeliveryVehicle();
+			if (deliveryVehicle == null) {
+				throw new NullPointerException("delivery vehicle is null!!!!!!1");
+			}
+			resourcesHolder.releaseVehicle(deliveryVehicle);
+			System.out.println(getName()+" released a vehicle: "+ deliveryVehicle.toString());
+			complete(ReleaseVehicleEventCallback, null);
 		});
 
 		/*

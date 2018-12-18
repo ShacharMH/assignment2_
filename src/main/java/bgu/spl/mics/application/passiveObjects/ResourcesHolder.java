@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ResourcesHolder {
 
     private final BlockingQueue<DeliveryVehicle> listOfCars;
+    private Semaphore semaphore;
     private int numOfCars; // no one changes this value. this is for debugging purposes.
 
 
@@ -49,23 +50,26 @@ public class ResourcesHolder {
      * @return 	{@link Future<DeliveryVehicle>} object which will resolve to a
      * 			{@link DeliveryVehicle} when completed.
      */
-	/* I don't think this is synchronized - specifically the last 3 lines...
-	but on the other hand, it doesn't really matter. all that matters is that we
-	return SOME delivery vehicle in each future object, and that, as far as I can see, happens. - now I'm not sure that's true.
+	/*
+	I DID SOME TESTING AND THIS CODE IS ***NOT*** SYNCHRONIZED:
+	I added sync. to the function and then the code worked perfectly. I think that maybe one thread assigns a car to result, and then another thread changes it.
+	this is really not efficient to keep it with sync. need to think of another implementation.
+	semaphores?
 	 */
     public Future<DeliveryVehicle> acquireVehicle() {
-        DeliveryVehicle result=null;
         try {
-            result = listOfCars.take();//get a vehicle from queue
+            semaphore.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-        catch (InterruptedException e){
-            System.out.println("Interrupted in acquiring a vehicle");
+        Future<DeliveryVehicle> ans = new Future<>();
+
+        try {
+            ans.resolve(listOfCars.take());//get a vehicle from queue and resolve Future obj.
+        } catch (InterruptedException e){
+            System.out.println("Interrupted while acquiring a vehicle");
         }
-        synchronized (result) {///Atomic reference is problematic with Future object, therefore I used synchronize
-            Future<DeliveryVehicle> ans = new Future<>();
-            ans.resolve(result);
             return ans;
-        }
     }
 
     /**
@@ -76,12 +80,8 @@ public class ResourcesHolder {
      */
     public void releaseVehicle(DeliveryVehicle vehicle) {
         listOfCars.add(vehicle);
-        if (listOfCars.size() > numOfCars) {
-            synchronized (this) {
-                if (listOfCars.size() > numOfCars)
-                    throw new IllegalArgumentException("there are more vehicles in listOfCars than was loaded");
-            }
-        }
+        System.out.println("a vehicle has been released");
+        semaphore.release();
     }
 
     /**
@@ -94,6 +94,7 @@ public class ResourcesHolder {
             listOfCars.add(v);
         }
         numOfCars = vehicles.length;
+        this.semaphore = new Semaphore(listOfCars.size());
     }
 
 }

@@ -39,6 +39,7 @@ public class TimeService extends MicroService{
 			sendBroadcast(tickBroadcast);
 			System.out.println(" time now is "+currentTime);
 		}
+		System.out.println(getName()+" is being terminated");
 		this.terminate();
 		
 	}

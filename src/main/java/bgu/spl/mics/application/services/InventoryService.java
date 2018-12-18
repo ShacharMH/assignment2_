@@ -40,29 +40,30 @@ public class InventoryService extends MicroService{
 
 			String bookName = CheckAvailabilityCallback.getBookName();
 			int price = inventory.checkAvailabiltyAndGetPrice(bookName);
+			OrderResult orderResult = inventory.take(bookName);
 
-			if (price != -1) { // there is a copy in stock!
-				OrderResult orderResult = inventory.take(bookName); // we try to take it
-				if (orderResult == OrderResult.SUCCESSFULLY_TAKEN) {
-					System.out.println(getName()+" finished CheckInventoryEvent regarding book " + bookName+ " with result "+ price);
-					complete(CheckAvailabilityCallback, price); // we successfully took it!
-				}
-					else { // book not in stock anymore :(
-					System.out.println(getName()+" finished CheckInventoryEvent regarding book " + bookName+ " with result -1");
-					complete(CheckAvailabilityCallback, -1);
-					}
-				}
+			if (orderResult == OrderResult.SUCCESSFULLY_TAKEN && price != -1) {
+				complete(CheckAvailabilityCallback, price);
+				System.out.println(getName()+" finished CheckInventoryEvent regarding book " + bookName+ " with result "+ price);
+			} else {
+				complete(CheckAvailabilityCallback, -1);
+				System.out.println(getName()+" finished CheckInventoryEvent regarding book " + bookName+ " with result -1");
+			}
 		});
 
 		subscribeEvent(GetBookPriceEvent.class, getBookPriceEventCallback -> {
 			// this event returns -1 if book is not in stock, else returns its price
-			complete(getBookPriceEventCallback, inventory.checkAvailabiltyAndGetPrice(getBookPriceEventCallback.getBookName()));
-			System.out.println(getName()+" finished a GetBookPriceEvent!");
+			int result = inventory.checkAvailabiltyAndGetPrice(getBookPriceEventCallback.getBookName());
+			complete(getBookPriceEventCallback, result);
+			System.out.println("**************** "+getName()+" finished a GetBookPriceEvent for book " + getBookPriceEventCallback.getBookName() + " with result: "+ result);
 		});
 
 		subscribeBroadcast(TickBroadcast.class, TickBroadcastCallback -> {
 			this.CurrentTime = TickBroadcastCallback.getCurrentTime();
-			if (TickBroadcastCallback.getCurrentTime() == TickBroadcastCallback.getDuration()) terminate();
+			if (TickBroadcastCallback.getCurrentTime() == TickBroadcastCallback.getDuration()) {
+				System.out.println(getName()+" is being terminated");
+				terminate();
+			}
 		});
 	}
 

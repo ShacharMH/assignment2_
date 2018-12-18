@@ -9,11 +9,13 @@ public class OrderBookEvent implements Event {
     private String BookName;
     private Customer c;
     int bookPrice = -2;
+    int receiptId;
 
-    public OrderBookEvent(String BookName,int CurrentTime, Customer c){
+    public OrderBookEvent(String BookName,int CurrentTime, Customer c, int receiptId){
         this.BookName=BookName;
         this.OrderTick=CurrentTime;//tick when book was ordered
         this.c = c;
+        this.receiptId = receiptId;
     }
 
     public String getBookName(){
@@ -42,5 +44,9 @@ public class OrderBookEvent implements Event {
 
     public int getBookPrice() {
         return bookPrice;
+    }
+
+    public int getReceiptId() {
+        return receiptId;
     }
 }

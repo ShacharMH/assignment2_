@@ -37,7 +37,10 @@ public class LogisticsService extends MicroService {
 
 		subscribeBroadcast(TickBroadcast.class, TickBroadcastCallback -> {
 			this.CurrentTime = TickBroadcastCallback.getCurrentTime();
-			if (TickBroadcastCallback.getCurrentTime() == TickBroadcastCallback.getDuration()) terminate();
+			if (TickBroadcastCallback.getCurrentTime() == TickBroadcastCallback.getDuration()) {
+				System.out.println(getName()+" is being terminated");
+				terminate();
+			}
 		});
 		
 	}

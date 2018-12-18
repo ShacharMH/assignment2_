@@ -5,6 +5,8 @@ import bgu.spl.mics.Future;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.passiveObjects.*;
+import jdk.nashorn.internal.ir.BlockLexicalContext;
+
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -22,6 +24,7 @@ public class SellingService extends MicroService{
 
 	private MoneyRegister moneyRegister;
 	private int CurrentTime;
+	int nextReceiptId = 0;
 	private Queue<WaitingEvent> onGoingCheckAvailabilityEventQueue;
 	private Queue<WaitingEvent> onGoingAcquireVehicleEvent;
 	private Queue<WaitingEvent> onGoingGetBookPriceEvent;
@@ -65,39 +68,54 @@ public class SellingService extends MicroService{
 			Future<Integer> getBookPriceEventFuture = sendEvent(getBookPriceEvent);
 			while(!getBookPriceEventFuture.isDone());
 			int price = getBookPriceEventFuture.get();
-			if (price == -1)
+			if (price == -1) { // book is not available
+				System.out.println(getName() + " completed an OrderBookEvent regarding book " + OrderBookEventCallback.getBookName()+" with null because book is not available");
 				complete(OrderBookEventCallback, null);
-			else {
-				if (OrderBookEventCallback.getCustomer().reserveAmount(price)) {
+			}
+			else { // book is available
+				if (OrderBookEventCallback.getCustomer().reserveAmount(price)) { // customer has enough money
 					CheckAvailabilityEvent checkAvailabilityEvent = new CheckAvailabilityEvent(OrderBookEventCallback.getBookName());
 					Future<Integer> checkAvailabilityEventFuture = sendEvent(checkAvailabilityEvent);
+					System.out.println(getName()+" sent a CheckAvailabilityEvent");
 					while (!checkAvailabilityEventFuture.isDone()) ;
-					System.out.println("checkAvailabilityEvent is done");
+					System.out.println(getName()+" says: checkAvailabilityEvent is done");
 					boolean isAvailable = checkAvailabilityEventFuture.get() >= 0;
-					System.out.println("isAvailable?: " + isAvailable);
-					if (isAvailable) {
+					System.out.println(getName()+" isAvailable?: " + isAvailable);
+					if (isAvailable) { // book is in stock & customer has enough money
 						moneyRegister.chargeCreditCard(OrderBookEventCallback.getCustomer(), price);
 						AcquireVehicleEvent acquireVehicleEvent = new AcquireVehicleEvent(OrderBookEventCallback.getCustomer().getAddress(), OrderBookEventCallback.getCustomer().getDistance());
 						System.out.println(getName() + " ordered a vehicle for book " + OrderBookEventCallback.getBookName());
 						Future<DeliveryVehicle> acquireVehicleEventFuture = sendEvent(acquireVehicleEvent);
 						while (!acquireVehicleEventFuture.isDone());
-						System.out.println("acquireVehicleEventFuture is done");
+						System.out.println(getName()+" acquireVehicleEventFuture is done");
 						DeliveryVehicle deliveryVehicle = acquireVehicleEventFuture.get();
 						DeliveryEvent deliveryEvent = new DeliveryEvent(deliveryVehicle,OrderBookEventCallback.getCustomer().getAddress(),OrderBookEventCallback.getCustomer().getDistance());
 						Future<Boolean> deliveryEventFuture = sendEvent(deliveryEvent);
 						while (!deliveryEventFuture.isDone());
-						OrderReceipt orderReceipt = new OrderReceipt(0, getName(), OrderBookEventCallback.getCustomer().getId(), OrderBookEventCallback.getBookName(), price, OrderBookEventCallback.getOrderTick(), OrderBookEventCallback.getProccessTick(), 0);
+						ReleaseVehicleEvent releaseVehicleEvent = new ReleaseVehicleEvent(deliveryVehicle);
+						sendEvent(releaseVehicleEvent);
+						OrderReceipt orderReceipt = new OrderReceipt(OrderBookEventCallback.getReceiptId(), getName(), OrderBookEventCallback.getCustomer().getId(), OrderBookEventCallback.getBookName(), price, OrderBookEventCallback.getOrderTick(), OrderBookEventCallback.getProccessTick(), 0);
 						moneyRegister.file(orderReceipt);
-						System.out.println(getName() + " completed an OrderBookEvent regarding book " + OrderBookEventCallback.getBookName());
+						System.out.println(getName() + " completed an OrderBookEvent regarding book " + OrderBookEventCallback.getBookName()+" with a purchase!");
 						complete(OrderBookEventCallback, orderReceipt);
+					} else { // book not is stock
+						OrderBookEventCallback.getCustomer().releaseAmount(price);
+						complete(OrderBookEventCallback, null);
+						System.out.println(getName() + " completed an OrderBookEvent regarding book " + OrderBookEventCallback.getBookName()+" with null because book is not available");
 					}
+				} else { // customer doesn't have enough money
+					complete(OrderBookEventCallback, null);
+					System.out.println(getName()+" completed an OrderBookEvent with null because customer didn't have enough money");
 				}
 			}
 		});
 
 		subscribeBroadcast(TickBroadcast.class, TickBroadcastCallback -> {
 			this.CurrentTime = TickBroadcastCallback.getCurrentTime();
-			if (TickBroadcastCallback.getCurrentTime() == TickBroadcastCallback.getDuration()) terminate();
+			if (TickBroadcastCallback.getCurrentTime() == TickBroadcastCallback.getDuration()) {
+				System.out.println(getName()+" is being terminated");
+				terminate();
+			}
 		});
 	}
 
