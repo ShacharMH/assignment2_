@@ -3,9 +3,7 @@ package bgu.spl.mics.application.passiveObjects;
 
 import com.google.gson.Gson;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -139,17 +137,15 @@ public class Inventory implements Serializable {
 	public void printInventoryToFile(String filename){
 
 		ConcurrentHashMap<String, Integer> clonedInventory = cloneInventory();
-		Gson gson = new Gson();
-
 
 		try {
-			FileWriter writer = new FileWriter(filename);
-			String json = gson.toJson(clonedInventory);
-			//System.out.println(json);
-			writer.write(json);
-			writer.close();
+            FileOutputStream CustFile = new FileOutputStream(filename);//file name needs to be changed to "args[1]"
+            ObjectOutputStream CustObject=new ObjectOutputStream(CustFile);
+            CustObject.writeObject(clonedInventory);
+            CustObject.close();
+            CustFile.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+            System.out.println("something's wrong with inventory output");;
 		}
 
 	}

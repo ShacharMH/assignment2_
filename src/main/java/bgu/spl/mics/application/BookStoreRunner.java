@@ -48,24 +48,24 @@ public class BookStoreRunner implements java.io.Serializable{
     private static void printInTheEnd(){
       try {
           //********printing the list of OrderReciepts
-          String printList = "printList.txt";//file name needs to be changed to "args[3]"
+          String printList = "printListtt.txt";//file name needs to be changed to "args[3]"
           MoneyRegister moneyRegister = MoneyRegister.getInstance();
           moneyRegister.printOrderReceipts(printList);
           //********printing Hashmap of Customers
-          FileOutputStream CustFile = new FileOutputStream("CustomersMap.txt");//file name needs to be changed to "args[1]"
+          FileOutputStream CustFile = new FileOutputStream("Customersss.txt");//file name needs to be changed to "args[1]"
           ObjectOutputStream CustObject=new ObjectOutputStream(CustFile);
           CustObject.writeObject(customerHashMap);
           CustObject.close();
           CustFile.close();
           //*********printing books and their remained amount
           Inventory inventory=Inventory.getInstance();
-          inventory.printInventoryToFile("inventory.txt");//file name needs to be changed to "args[2]"
+          inventory.printInventoryToFile("inventoryyy.txt");//file name needs to be changed to "args[2]"
           //*********print MoneyRegister object
-          FileOutputStream MoneyRegisterFile = new FileOutputStream("MoneyRegister.txt");//file name needs to be changed to "args[4]"
+          FileOutputStream MoneyRegisterFile = new FileOutputStream("Moneyyy.txt");//file name needs to be changed to "args[4]"
           ObjectOutputStream MoneyRegisterObject=new ObjectOutputStream(MoneyRegisterFile);
           MoneyRegisterObject.writeObject(moneyRegister);
           MoneyRegisterObject.close();
-         // MoneyRegisterFile.close();
+          MoneyRegisterFile.close();
 
           //****testing output
           FileInputStream Test= new FileInputStream("CustomersMap.txt");
@@ -267,13 +267,7 @@ public class BookStoreRunner implements java.io.Serializable{
             time.start();
 
 
-
 //  checked parsing of Customer,works.
-
-
-
-
-
 
 
         } catch (FileNotFoundException e) {
@@ -282,22 +276,25 @@ public class BookStoreRunner implements java.io.Serializable{
         catch (InterruptedException e) {
             System.out.println("Countdown interupted");
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
+
+
+
+    //*****DVORA'S Test for output
+/*
+    public static<T> void read(String path, T type, String prefix){
+        try (FileInputStream file=new FileInputStream(path);
+             ObjectInputStream obj=new ObjectInputStream(file);){
+            T t=(T)obj.readObject();
+            GsonBuilder gsonBuilder=new GsonBuilder();
+            gsonBuilder.setPrettyPrinting();
+            Gson gson=gsonBuilder.create();
+            String x=gson.toJson(t,type.getClass());
+            System.out.print("\n --- "+prefix+" ---\n");
+            System.out.println(x);
+        }catch(Exception e){}
+    }
+*/
+
 }
 

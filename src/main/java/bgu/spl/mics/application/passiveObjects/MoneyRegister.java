@@ -3,9 +3,7 @@ package bgu.spl.mics.application.passiveObjects;
 
 import com.google.gson.Gson;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Serializable;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -92,15 +90,14 @@ public class MoneyRegister implements Serializable{
      */
 	public void printOrderReceipts(String filename) {
 		List<OrderReceipt> clonedMoneyRegister = cloneMoneyRegister();
-		Gson gson = new Gson();
-
-		try {
-			FileWriter writer = new FileWriter(filename);
-			String json = gson.toJson(clonedMoneyRegister);
-			writer.write(json);
-			writer.close();
+		try{
+            FileOutputStream CustFile = new FileOutputStream(filename);//file name needs to be changed to "args[1]"
+            ObjectOutputStream CustObject=new ObjectOutputStream(CustFile);
+            CustObject.writeObject(clonedMoneyRegister);
+            CustObject.close();
+            CustFile.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+        System.out.println("something's wrong with list of reciepts");;
 		}
 	}
 
