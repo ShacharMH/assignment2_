@@ -111,6 +111,8 @@ public class MessageBusImpl implements MessageBus {
 	public   <T> Future<T>  sendEvent(Event<T> e) {
 	     synchronized (hashEventToMicroServiceQueue) {
              if (hashEventToMicroServiceQueue.containsKey(e.getClass())) {
+                 Future<T> result = new Future<>();//create future object that will hold the answer to this event
+                 MapBetweenEventAndFutureObj.put(e, result);//put event and future object in map
                  ConcurrentLinkedQueue<MicroService> QueueOfEvent = hashEventToMicroServiceQueue.get(e.getClass());//get the queue assigned to this type of event
                  MicroService handleEvent = QueueOfEvent.remove();//holds the micro service that will get the event and handle it.
                  System.out.println(" the name of the micro service that will handle is " + handleEvent.getName());//test I added
@@ -118,8 +120,6 @@ public class MessageBusImpl implements MessageBus {
                  if (QueueOfMicroservice == null) System.out.println("the queue is null");
                  QueueOfMicroservice.add(e);//"add" and not "put", this is a non-blocking method,
                  QueueOfEvent.add(handleEvent);//MicroService is returned to the tail of the queue of the event, round robin invariant is maintained.
-                 Future<T> result = new Future<>();//create future object that will hold the answer to this event
-                 MapBetweenEventAndFutureObj.put(e, result);//put event and future object in map
                  return result;
              } else
                  return null;

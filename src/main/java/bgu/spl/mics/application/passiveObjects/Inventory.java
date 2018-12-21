@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -22,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /* 30.11.2018
 everything works correctly ans is thread-safe.
  */
-public class Inventory {
+public class Inventory implements Serializable {
 
 	private final ConcurrentHashMap<String,BookInventoryInfo> myInventory;
 	private String[] bookNamesList;

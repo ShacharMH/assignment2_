@@ -9,7 +9,9 @@ import java.sql.Wrapper;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.lang.String;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Lock;
+
 
 import bgu.spl.mics.application.services.*;
 import com.google.gson.*;
@@ -34,11 +36,13 @@ public class BookStoreRunner implements java.io.Serializable{
     // need to add all the other passive object when time comes :)
 
     public static void main(String[] args) {
-        synchronized (randomLock) {
+
             deserialize();
+
+
             // JsonReader jsonReader=new JsonReader();
             printInTheEnd();
-        }
+
 
     }
     private static void printInTheEnd(){
@@ -161,16 +165,21 @@ public class BookStoreRunner implements java.io.Serializable{
             int duration = Time.get("duration").getAsInt();
             TimeService timeService = new TimeService(speed, duration);//DON'T FORGET:start this with a thread AFTER we initialize all the micro-services
             System.out.println(speed + " " + duration);//test
+            Thread time = new Thread(timeService);//experiment
 
 //checked parsing of time,works.
-
-
+            int numOfSellServices = services.get("selling").getAsInt();
+            int numOfInventoryServices = services.get("inventoryService").getAsInt();
+            int numOfLogisticServices = services.get("logistics").getAsInt();
+            int numOfResourcesServices = services.get("resourcesService").getAsInt();
+            JsonArray Customers = services.getAsJsonArray("customers");
+            CountDownLatch countDownLatch=new CountDownLatch(numOfSellServices+numOfInventoryServices+numOfLogisticServices+numOfResourcesServices+Customers.size());
             ////*****Selling service
 
-            int numOfSellServices = services.get("selling").getAsInt();
+
             for (int i = 0; i < numOfSellServices; i++) {
                 String name = "Selling Service number" + i;
-                SellingService sell = new SellingService(name);
+                SellingService sell = new SellingService(name,countDownLatch);
                 Thread sellThread = new Thread(sell);
                 sellThread.start();
                 System.out.println(name);//test
@@ -180,10 +189,10 @@ public class BookStoreRunner implements java.io.Serializable{
 
 
             ////**********Inventory Service
-            int numOfInventoryServices = services.get("inventoryService").getAsInt();
+
             for (int i = 0; i < numOfInventoryServices; i++) {
                 String name = "Inventory Service number" + i;
-                InventoryService NewInventory = new InventoryService(name);
+                InventoryService NewInventory = new InventoryService(name,countDownLatch);
                 Thread InventoryThread = new Thread(NewInventory);
                 InventoryThread.start();
                 System.out.println(name);//test
@@ -191,26 +200,26 @@ public class BookStoreRunner implements java.io.Serializable{
 
 
             //********Logistics Service
-            int numOfLogisticServices = services.get("logistics").getAsInt();
+
             for (int i = 0; i < numOfLogisticServices; i++) {
                 String name = "Logistics Service number" + i;
-                LogisticsService NewLogistics= new LogisticsService(name);
+                LogisticsService NewLogistics= new LogisticsService(name,countDownLatch);
                 Thread LogisticsThread = new Thread(NewLogistics);
                 LogisticsThread.start();
                 System.out.println(name);//test
             }
 
+            //**************Resources Services
 
-            int numOfResourcesServices = services.get("resourcesService").getAsInt();
             for (int i = 0; i < numOfResourcesServices; i++) {
                 String name = "Resources Service number" + i;
-                ResourceService NewResources= new ResourceService(name);
+                ResourceService NewResources= new ResourceService(name,countDownLatch);
                 Thread ResourcesThread = new Thread(NewResources);
                 ResourcesThread.start();
                 System.out.println(name);//test
             }
 
-            JsonArray Customers = services.getAsJsonArray("customers");
+
             Iterator ReadCustomers = Customers.iterator();
             int countCustomer = 0;
             while (ReadCustomers.hasNext()) {
@@ -245,16 +254,17 @@ public class BookStoreRunner implements java.io.Serializable{
                 Customer customer = new Customer(name, id, address, distance, creditAmount, creditNum,orderReceipts);
                 customerHashMap.put(id,customer);
                 String ApiName = "API Service number " + countCustomer;
-                APIService apiService = new APIService(ApiName, customer.getCustomerReceiptList(),customer);
+                APIService apiService = new APIService(ApiName, customer.getCustomerReceiptList(),customer,countDownLatch);
                 Thread APIserviceThread = new Thread(apiService);
                 APIserviceThread.start();
                 countCustomer++;
                 System.out.println(customer.toString());//test
-
-                Thread time = new Thread(timeService);//experiment
-                time.start();
-
             }
+            //Making a countDown with number of MS that have to be initialized before TimeService can start
+
+
+            countDownLatch.await();//wait for all MS to initialize before beginning the timer
+            time.start();
 
 
 
@@ -269,23 +279,9 @@ public class BookStoreRunner implements java.io.Serializable{
         } catch (FileNotFoundException e) {
             System.out.println("file not found,check if file is in root directory");
         }
-
-
-
-
-
-
-
-
-
-
-       /*
-        File file=new File("src/input.json");
-        try{
-            InputStream inputStream = new FileInputStream(file);
+        catch (InterruptedException e) {
+            System.out.println("Countdown interupted");
         }
-        catch (FileNotFoundException e){};
-        Assert.assertNotNull(inp);
 
 
 
@@ -294,28 +290,12 @@ public class BookStoreRunner implements java.io.Serializable{
 
 
 
-        try{
-            FileInputStream fileIn = new FileInputStream("input.json");
-            fileIn=null;
-            Assert.assertNull(fileIn);//the file gets
-            ObjectInputStream objIn = new ObjectInputStream(fileIn);
-            Assert.assertNotNull(objIn);
-            Gson gson = new Gson();
-            JsonParser jsonParser = new JsonParser();
-            Reader reader = new InputStreamReader(new FileInputStream("input.json"), StandardCharsets.UTF_8);
-            JsonObject jsonObject = new JsonObject();
-            BookInventoryInfo bookInventoryInfo = gson.fromJson(reader, BookInventoryInfo.class);
-            Assert.assertNotNull(bookInventoryInfo);
-            System.out.println(bookInventoryInfo.getBookTitle());
 
-            /* the above line reads from json file the first object it encounters that is inside the {
-            (curly brackets and then assigns in to a new object defined as the right parameter,
-            -- what I need to do is find out how to define the object that is being created as the String before the [
-            (array brackets).
-            */
-        //} catch (FileNotFoundException e1) {
-        //} catch (IOException e2) {
-        //} catch (Exception e3) {}
+
+
+
+
+
 
 
     }

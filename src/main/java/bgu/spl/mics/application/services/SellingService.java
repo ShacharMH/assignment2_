@@ -9,6 +9,7 @@ import jdk.nashorn.internal.ir.BlockLexicalContext;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Selling service in charge of taking orders from customers.
@@ -24,17 +25,19 @@ public class SellingService extends MicroService{
 
 	private MoneyRegister moneyRegister;
 	private int CurrentTime;
+	private CountDownLatch countDownLatch;
 	int nextReceiptId = 0;
 	private Queue<WaitingEvent> onGoingCheckAvailabilityEventQueue;
 	private Queue<WaitingEvent> onGoingAcquireVehicleEvent;
 	private Queue<WaitingEvent> onGoingGetBookPriceEvent;
 
-	public SellingService(String name) {
+	public SellingService(String name,CountDownLatch countDownLatch) {
 		super(name);
 		moneyRegister = MoneyRegister.getInstance();
 		onGoingAcquireVehicleEvent = new LinkedList<>();
 		onGoingCheckAvailabilityEventQueue = new LinkedList<>();
 		onGoingGetBookPriceEvent = new LinkedList<>();
+		this.countDownLatch=countDownLatch;
 	}
 
 	@Override
@@ -117,6 +120,7 @@ public class SellingService extends MicroService{
 				terminate();
 			}
 		});
+		countDownLatch.countDown();
 	}
 
 	/* do:

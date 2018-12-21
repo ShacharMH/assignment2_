@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -21,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 
 //SHACHAR
-public class MoneyRegister {
+public class MoneyRegister implements Serializable{
 
 	private  List<OrderReceipt> issuedReceipts;
 	private List<Integer> orderIdList = new ArrayList<>();

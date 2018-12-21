@@ -7,6 +7,8 @@ import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.passiveObjects.Customer;
 import bgu.spl.mics.application.passiveObjects.OrderReceipt;
 
+import java.util.concurrent.CountDownLatch;
+
 /**
  * APIService is in charge of the connection between a client and the store.
  * It informs the store about desired purchases using {@link //BookOrderEvent}.
@@ -18,14 +20,16 @@ import bgu.spl.mics.application.passiveObjects.OrderReceipt;
  */
 public class APIService extends MicroService{
 private OrderReceipt[] orderReceipts;
+private CountDownLatch countDownLatch;
 volatile int CurrentTime=0;
 private Customer customer;
 int receiptId = 1;
 
-	public APIService(String name,OrderReceipt[] orders,Customer customer) {
+	public APIService(String name,OrderReceipt[] orders,Customer customer,CountDownLatch countDownLatch) {
 		super(name);
 		this.customer=customer;
 		this.orderReceipts=orders;
+		this.countDownLatch=countDownLatch;
 	}
 
 	@Override
@@ -47,6 +51,7 @@ int receiptId = 1;
 				}
 			}
 		});
+		countDownLatch.countDown();
 	}
 
 }

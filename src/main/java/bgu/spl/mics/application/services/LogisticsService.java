@@ -4,6 +4,8 @@ import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.DeliveryEvent;
 import bgu.spl.mics.application.messages.TickBroadcast;
 
+import java.util.concurrent.CountDownLatch;
+
 /**
  * Logistic service in charge of delivering books that have been purchased to customers.
  * Handles {@link DeliveryEvent}.
@@ -19,9 +21,11 @@ insert it into the queue and go over the queue to complete the ones that have fi
 */
 public class LogisticsService extends MicroService {
 	private int CurrentTime;
+	private CountDownLatch countDownLatch;
 
-	public LogisticsService(String name) {
+	public LogisticsService(String name,CountDownLatch countDownLatch) {
 		super(name);
+		this.countDownLatch=countDownLatch;
 	}
 
 	@Override
@@ -42,7 +46,7 @@ public class LogisticsService extends MicroService {
 				terminate();
 			}
 		});
-		
+		countDownLatch.countDown();
 	}
 
 }

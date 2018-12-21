@@ -8,6 +8,8 @@ import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.passiveObjects.DeliveryVehicle;
 import bgu.spl.mics.application.passiveObjects.ResourcesHolder;
 
+import java.util.concurrent.CountDownLatch;
+
 //
 /**
  * ResourceService is in charge of the store resources - the delivery vehicles.
@@ -23,13 +25,14 @@ import bgu.spl.mics.application.passiveObjects.ResourcesHolder;
 deals with getting the car to deliver the book.
  */
 public class ResourceService extends MicroService{
-
+	private CountDownLatch countDownLatch;
 	private ResourcesHolder resourcesHolder;
 	//private Queue<WaitingDelivery> onGoingDeliveryQueue;
 	private int CurrentTime;
-	public ResourceService(String name) {
+	public ResourceService(String name,CountDownLatch countDownLatch) {
 		super(name);
 		resourcesHolder = ResourcesHolder.getInstance();
+		this.countDownLatch=countDownLatch;
 		//onGoingDeliveryQueue = new LinkedList<>();
 	}
 
@@ -97,6 +100,7 @@ public class ResourceService extends MicroService{
 					if releaseVehicles == true, then there are free vehicles, and we return to 1 (e.g., the beginning of the while loop)
 					if releaseVehicles == false, then there are no free vehicles, and we'll call this function again.
 					 */
+		countDownLatch.countDown();
 				}
 			}
 /*
