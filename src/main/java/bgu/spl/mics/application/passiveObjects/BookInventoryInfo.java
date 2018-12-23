@@ -53,11 +53,7 @@ public class BookInventoryInfo {
 		return price;
 	}
 
-	/* reflections on thread-safety: initialization of this object happens only once, so I don't mind the constructor
-	not being thread-safe. BUT, when a book gets sold, then the amount should decrease by 1, and that function may be activate
-	simultaneously by a number of threads - this is not true, because of the implementation of _public int checkAvailabiltyAndGetPrice(String book) {
-	in _Inventory_, which is synchronized on the book it deals with, hence calling this function not concurrently for each book.
-	*/
+
 	public synchronized void decreaseAmount() {
 		amount--;
 	}

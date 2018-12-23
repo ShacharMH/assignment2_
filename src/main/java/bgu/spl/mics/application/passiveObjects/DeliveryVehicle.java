@@ -48,10 +48,5 @@ public class DeliveryVehicle {
 		} catch (InterruptedException e) {}
 	}
 
-	@Override // to delete!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	public String toString() {
-		if (this == null)
-			return "Null";
-		return "Delivery Vehicle licence number: "+ licence + ", speed: " + speed;
-	}
+
 }

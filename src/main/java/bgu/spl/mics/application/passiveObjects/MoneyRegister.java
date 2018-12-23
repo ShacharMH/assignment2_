@@ -1,8 +1,5 @@
 package bgu.spl.mics.application.passiveObjects;
 
-
-import com.google.gson.Gson;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * You can add ONLY private fields and methods to this class as you see fit.
  */
 
-//SHACHAR
+
 public class MoneyRegister implements Serializable{
 
 	private  List<OrderReceipt> issuedReceipts;
@@ -49,7 +46,6 @@ public class MoneyRegister implements Serializable{
      * @param r		The receipt to save in the money register.
      */
 
-	// need not be synchronized
 	public void file (OrderReceipt r) {
 			if (r == null)
 				return;

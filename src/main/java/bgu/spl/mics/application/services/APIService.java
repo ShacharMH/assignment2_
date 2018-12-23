@@ -43,7 +43,7 @@ int receiptId = 1;
 			else
 			{
 				Future<OrderReceipt> future=new Future<>();
-				for(OrderReceipt o:orderReceipts){ // should'nt it be "while" we may miss launching some of the orderBookEvent this way
+				for(OrderReceipt o:orderReceipts){
 					if (o.getOrderTick()==CurrentTime) {
 						future = sendEvent(new OrderBookEvent(o.getBookTitle(), CurrentTime, customer, customer.getId()*receiptId));
 						receiptId++;

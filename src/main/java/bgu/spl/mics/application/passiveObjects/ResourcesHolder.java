@@ -29,10 +29,7 @@ public class ResourcesHolder {
         private static ResourcesHolder List = new ResourcesHolder();
     }
     private ResourcesHolder() {
-        listOfCars = new LinkedBlockingQueue<DeliveryVehicle>();//need to change capacity to number of vehicles from input
-		/* I don't think you need to put a number here.. when you call the load function then the cars are being added and that's it
-		The implementation of ArrayBlockingQueue does not allow it so I chanfes the implementation to LinkedBlockingQueue.
-		 */
+        listOfCars = new LinkedBlockingQueue<>();
     }
     /**
      * Retrieves the single instance of this class.

@@ -9,14 +9,14 @@ package bgu.spl.mics.application.passiveObjects;
  */
 public class OrderReceipt {
 
-	private int orderId; //
+	private int orderId;
 	private String Seller; // will hold the name of the service that handled the order.
 	private int customerId;
 	private String title;
 	private int price;
 	private int orderTick; // tick in which customer ordered the book
-	private int proccessTick;// = -1; // tick in which the selling service started proccesssing the order
-	private int issuedTick;// = -1; //tick in which this receipt was issued (when corresponding event had been completed).
+	private int proccessTick;
+	private int issuedTick;
 
 	public OrderReceipt(int orderId, String Seller, int customerId, String title,
 						int price, int orderTick, int proccessTick, int issuedTick) {
@@ -93,8 +93,6 @@ public class OrderReceipt {
 	/* the following methods shouldn't be thread-safe because there's no way 2 threads will try to access
 	one of the following functions simultaneously:
 	1. Because only one thread work on a certain OrderBookEvent
-	2. The program flow regarding these functions is consequential.
-	(3. It's one reciept per book; if the customer wants to buy 2 books - each book gets its own thread.)
 	 */
 	public void setOrderTick(int tick) throws Exception {
 		if (tick < 0 || this.orderTick != -1)

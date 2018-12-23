@@ -2,25 +2,18 @@ package bgu.spl.mics.application;
 
 import bgu.spl.mics.application.passiveObjects.*;
 
-import java.awt.print.Book;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.sql.Wrapper;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.lang.String;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.locks.Lock;
 
 
 import bgu.spl.mics.application.services.*;
-import com.google.gson.*;
-import com.google.gson.stream.JsonReader;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonArray;
-import org.junit.Assert;
 
 
 /** This is the Main class of the application. You should parse the input file,
@@ -29,18 +22,13 @@ import org.junit.Assert;
  */
 public class BookStoreRunner implements java.io.Serializable{
 
-    //this long int will act as an ID for serialization and deserialization of the class. I don't know if it's really needed.
     private static HashMap<Integer,Customer> customerHashMap=new HashMap<>();//addition, for printing later on
     private static Object randomLock=new Object();//just an object so deserialize will be performed before printInTheEnd
 
-    // need to add all the other passive object when time comes :)
 
     public static void main(String[] args) {
 
             deserialize();
-
-
-            // JsonReader jsonReader=new JsonReader();
             printInTheEnd();
 
 

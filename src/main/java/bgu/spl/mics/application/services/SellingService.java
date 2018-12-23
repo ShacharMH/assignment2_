@@ -26,17 +26,10 @@ public class SellingService extends MicroService{
 	private MoneyRegister moneyRegister;
 	private int CurrentTime;
 	private CountDownLatch countDownLatch;
-	int nextReceiptId = 0;
-	private Queue<WaitingEvent> onGoingCheckAvailabilityEventQueue;
-	private Queue<WaitingEvent> onGoingAcquireVehicleEvent;
-	private Queue<WaitingEvent> onGoingGetBookPriceEvent;
 
 	public SellingService(String name,CountDownLatch countDownLatch) {
 		super(name);
 		moneyRegister = MoneyRegister.getInstance();
-		onGoingAcquireVehicleEvent = new LinkedList<>();
-		onGoingCheckAvailabilityEventQueue = new LinkedList<>();
-		onGoingGetBookPriceEvent = new LinkedList<>();
 		this.countDownLatch=countDownLatch;
 	}
 
