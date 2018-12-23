@@ -16,9 +16,6 @@ import java.util.concurrent.CountDownLatch;
  * You MAY change constructor signatures and even add new public constructors.
  */
 
-/* I think I can make it more efficient by having a Queue of deliveries, start each one of them,
-insert it into the queue and go over the queue to complete the ones that have finished.
-*/
 public class LogisticsService extends MicroService {
 	private int CurrentTime;
 	private CountDownLatch countDownLatch;

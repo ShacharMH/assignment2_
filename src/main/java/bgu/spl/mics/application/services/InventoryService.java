@@ -19,8 +19,6 @@ import java.util.concurrent.CountDownLatch;
  * You can add private fields and public methods to this class.
  * You MAY change constructor signatures and even add new public constructors.
  */
-//SHACHAR
-	// 1. for each event/broadcast I subscribe to, I need to create a matching callback.
 public class InventoryService extends MicroService{
 
 	private Inventory inventory;
@@ -34,10 +32,7 @@ public class InventoryService extends MicroService{
 	}
 
 	@Override
-	/* Things to notice:
-	1. the registration of the ms happens in the class MicroService which InventoryService extends.
-	2. registration to the CheckAvailabilityEvent. that's it.
-	 */
+
 	protected void initialize() {
 
 		subscribeEvent(CheckAvailabilityEvent.class, CheckAvailabilityCallback -> {

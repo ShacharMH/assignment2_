@@ -1,14 +1,6 @@
 package bgu.spl.mics;
 
-import bgu.spl.mics.example.messages.ExampleEvent;
-import jdk.nashorn.internal.runtime.regexp.JoniRegExp;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Queue;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * The {@link MessageBusImpl class is the implementation of the MessageBus interface.
@@ -107,7 +99,6 @@ public class MessageBusImpl implements MessageBus {
 	}
 
 	//Insert event to messagequeue of micro-service(round robin), return future object to micro-service that sent this event
-    //need to synchronize this fellow
 	public   <T> Future<T>  sendEvent(Event<T> e) {
 	     synchronized (hashEventToMicroServiceQueue) {
              if (hashEventToMicroServiceQueue.containsKey(e.getClass())) {
@@ -146,7 +137,6 @@ public class MessageBusImpl implements MessageBus {
 
     }
 
-//need to understand the difference between waiting for a message and being in the middle of handling one
         public Message awaitMessage (MicroService m) throws InterruptedException {//need to use interupted mechanism
             if (!hashMicroServiceToMessagesQueue.containsKey(m)) {//if we are trying to get a meesage of a MS that isn't registered
                 throw new IllegalStateException();
@@ -159,25 +149,6 @@ public class MessageBusImpl implements MessageBus {
             }
 
         }
-
-
-
-//***************methods for tests
-        public MicroService getMicroServiceOfEvent(Class <? extends Event> type){//ONLY FOR TESTS
-            ConcurrentLinkedQueue<MicroService> QueueOfEvent = hashEventToMicroServiceQueue.get(type);//get the queue assigned to this type of event
-            MicroService handleEvent = QueueOfEvent.remove();//holds the micro service that will get the event and handle it.
-            return handleEvent;
-	    }
-
-        public MicroService getMicroServiceOfBroadcast(Class <? extends Broadcast> type){//ONLY FOR TESTS
-            ConcurrentLinkedQueue<MicroService> BroadcastsMicroserviceList = hashBroadcastToMicroServicesQueue.get(type);//get the queue assigned to this type of broadcast
-            MicroService handleEvent = BroadcastsMicroserviceList.remove();//holds the micro service that will get the event and handle it.
-            return handleEvent;
-        }
-
-        public Future returnFutureOfEvent(Event event){//only for tests
-	     return MapBetweenEventAndFutureObj.get(event);
-        }
-    }
+}
 
 

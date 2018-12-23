@@ -18,13 +18,11 @@ import java.util.concurrent.atomic.AtomicReference;
  * You can add ONLY private methods and fields to this class.
  */
 
-//Amir
-//There is a fixed amount of cars-supplied in the json file input.
 public class ResourcesHolder {
 
     private final BlockingQueue<DeliveryVehicle> listOfCars;
     private Semaphore semaphore;
-    private int numOfCars; // no one changes this value. this is for debugging purposes.
+    private int numOfCars;
 
 
     private static class HolderOfResourceHolder {
@@ -50,12 +48,7 @@ public class ResourcesHolder {
      * @return 	{@link Future<DeliveryVehicle>} object which will resolve to a
      * 			{@link DeliveryVehicle} when completed.
      */
-	/*
-	I DID SOME TESTING AND THIS CODE IS ***NOT*** SYNCHRONIZED:
-	I added sync. to the function and then the code worked perfectly. I think that maybe one thread assigns a car to result, and then another thread changes it.
-	this is really not efficient to keep it with sync. need to think of another implementation.
-	semaphores?
-	 */
+
     public Future<DeliveryVehicle> acquireVehicle() {
         try {
             semaphore.acquire();

@@ -18,18 +18,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * GUIDELINE: ONLY INVENTORY TOUCHES THE INSTANCES OF THE BookInventoryInfo!
  */
 
-/* 30.11.2018
-everything works correctly ans is thread-safe.
- */
 public class Inventory implements Serializable {
 
 	private final ConcurrentHashMap<String,BookInventoryInfo> myInventory;
 	private String[] bookNamesList;
 	private boolean isLoaded = false;
 
-	/* this tiny class helps us achieve lazy initialization (so we don't get an instance the second we import this class.
-	!!Because only a single thread loads classes, only one instance will be created!!
-	 */
+
 	private static class InventoryHolder {
 		private static Inventory instance = new Inventory();
 	}
@@ -76,11 +71,6 @@ public class Inventory implements Serializable {
      * 			second should reduce by one the number of books of the desired type.
      */
 
-	/* this is thread-safe:
-	1. is synchronized on the relevant book
-	2. the answer returned from  _checkAvailabiltyAndGetPrice(book)_ is saved on the thread's stack so
-	   other threads can't touch it: https://www.youtube.com/watch?v=otCpCn0l4Wo
-	 */
 	public OrderResult take (String book) {
 
 			if (isLoaded) {
@@ -110,9 +100,6 @@ public class Inventory implements Serializable {
      * @return the price of the book if it is available, -1 otherwise.
      */
 
-	/* this shouldn't be thread-safe:
-	1. doesn't change any object
-	 */
 	public int checkAvailabiltyAndGetPrice(String book) {
 		BookInventoryInfo tmpbook = myInventory.getOrDefault(book, new BookInventoryInfo("default", 0, 0));
 		if (tmpbook.getAmountInInventory() > 0) {
@@ -131,15 +118,13 @@ public class Inventory implements Serializable {
      * This method is called by the main method in order to generate the output.
      */
 
-	/* this function is unsynchronized!
-	It calls a synchronized clone() function that creates a copy of _myInventory_ and then works on the said copy.
-	 */
+
 	public void printInventoryToFile(String filename){
 
 		ConcurrentHashMap<String, Integer> clonedInventory = cloneInventory();
 
 		try {
-            FileOutputStream CustFile = new FileOutputStream(filename);//file name needs to be changed to "args[1]"
+            FileOutputStream CustFile = new FileOutputStream(filename);
             ObjectOutputStream CustObject=new ObjectOutputStream(CustFile);
             CustObject.writeObject(clonedInventory);
             CustObject.close();
@@ -151,7 +136,7 @@ public class Inventory implements Serializable {
 	}
 
 	// this function created a copy of myInventory.
-	private synchronized ConcurrentHashMap<String, Integer> cloneInventory() { // synchronized on _this_, e.g. on Inventory
+	private synchronized ConcurrentHashMap<String, Integer> cloneInventory() {
 		ConcurrentHashMap<String, Integer> clonedInventory = new ConcurrentHashMap<>();
 		for (int i = 0; i < myInventory.size(); i++) {
 			clonedInventory.put(bookNamesList[i], myInventory.get(bookNamesList[i]).getAmountInInventory());

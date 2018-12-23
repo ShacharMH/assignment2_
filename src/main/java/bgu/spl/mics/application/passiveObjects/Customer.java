@@ -95,7 +95,6 @@ public class Customer {
 	}
 
 	// decreases amount in reservedAmount
-	// this should work but in this implementation each sum is going to get touched by one micro-serice so the implementation can be simpler
 	public void pay(int amount) {
 		reservedAmount.remove(Integer.valueOf(amount));
 		sumOfReservedAmount.addAndGet(-amount);
