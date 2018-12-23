@@ -107,11 +107,4 @@ public class MoneyRegister implements Serializable{
 		return clonedMoneyRegister;
 	}
 
-	public void setTotal(int num) {///public method,just for testing,needs to be erased later on
-		this.total.set(num);
-	}
-	public void clearIssuedReciepts(){///public method,just for testing,needs to be erased later on
-		issuedReceipts.clear();
-	}
-
 }
