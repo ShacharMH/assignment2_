@@ -39,7 +39,7 @@ public class ResourceService extends MicroService{
 		subscribeBroadcast(TickBroadcast.class, TickBroadcastCallback -> {
 			this.CurrentTime = TickBroadcastCallback.getCurrentTime();
 			if (TickBroadcastCallback.getCurrentTime() == TickBroadcastCallback.getDuration()) {
-				System.out.println(getName()+" is being terminated");
+				//System.out.println(getName()+" is being terminated");
 				terminate();
 			}
 		});
@@ -48,9 +48,9 @@ public class ResourceService extends MicroService{
 			Future<DeliveryVehicle> deliveryVehicleFuture = resourcesHolder.acquireVehicle();
 			while(!deliveryVehicleFuture.isDone());
 			DeliveryVehicle deliveryVehicle = deliveryVehicleFuture.get();
-			System.out.println(getName()+": the vehicle supplied is: " + deliveryVehicle.toString());
+			//System.out.println(getName()+": the vehicle supplied is: " + deliveryVehicle.toString());
 			complete(AcquireVehicleEventCallback, deliveryVehicle);
-			System.out.println(getName()+" acquired a vehicle");
+			//System.out.println(getName()+" acquired a vehicle");
 		});
 
 		subscribeEvent(ReleaseVehicleEvent.class, ReleaseVehicleEventCallback -> {
@@ -59,7 +59,7 @@ public class ResourceService extends MicroService{
 				throw new NullPointerException("delivery vehicle is null!!!!!!1");
 			}
 			resourcesHolder.releaseVehicle(deliveryVehicle);
-			System.out.println(getName()+" released a vehicle: "+ deliveryVehicle.toString());
+			//System.out.println(getName()+" released a vehicle: "+ deliveryVehicle.toString());
 			complete(ReleaseVehicleEventCallback, null);
 		});
 

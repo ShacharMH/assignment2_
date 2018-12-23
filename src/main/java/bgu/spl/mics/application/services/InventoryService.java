@@ -43,10 +43,10 @@ public class InventoryService extends MicroService{
 
 			if (orderResult == OrderResult.SUCCESSFULLY_TAKEN && price != -1) {
 				complete(CheckAvailabilityCallback, price);
-				System.out.println(getName()+" finished CheckInventoryEvent regarding book " + bookName+ " with result "+ price);
+				//System.out.println(getName()+" finished CheckInventoryEvent regarding book " + bookName+ " with result "+ price);
 			} else {
 				complete(CheckAvailabilityCallback, -1);
-				System.out.println(getName()+" finished CheckInventoryEvent regarding book " + bookName+ " with result -1");
+				//System.out.println(getName()+" finished CheckInventoryEvent regarding book " + bookName+ " with result -1");
 			}
 		});
 
@@ -54,13 +54,13 @@ public class InventoryService extends MicroService{
 			// this event returns -1 if book is not in stock, else returns its price
 			int result = inventory.checkAvailabiltyAndGetPrice(getBookPriceEventCallback.getBookName());
 			complete(getBookPriceEventCallback, result);
-			System.out.println("**************** "+getName()+" finished a GetBookPriceEvent for book " + getBookPriceEventCallback.getBookName() + " with result: "+ result);
+			//System.out.println("**************** "+getName()+" finished a GetBookPriceEvent for book " + getBookPriceEventCallback.getBookName() + " with result: "+ result);
 		});
 
 		subscribeBroadcast(TickBroadcast.class, TickBroadcastCallback -> {
 			this.CurrentTime = TickBroadcastCallback.getCurrentTime();
 			if (TickBroadcastCallback.getCurrentTime() == TickBroadcastCallback.getDuration()) {
-				System.out.println(getName()+" is being terminated");
+				//System.out.println(getName()+" is being terminated");
 				terminate();
 			}
 		});

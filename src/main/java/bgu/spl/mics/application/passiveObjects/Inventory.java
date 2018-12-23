@@ -78,7 +78,7 @@ public class Inventory implements Serializable {
 					int result = checkAvailabiltyAndGetPrice(book);
 					if (result > 0) {
 						myInventory.get(book).decreaseAmount();
-						System.out.println(book + " was successfully taken, copies left in stock: " + myInventory.get(book).getAmountInInventory());
+						//System.out.println(book + " was successfully taken, copies left in stock: " + myInventory.get(book).getAmountInInventory());
 						return OrderResult.SUCCESSFULLY_TAKEN;
 					} else {
 						System.out.println(book + " is not in stock");

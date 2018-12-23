@@ -10,7 +10,7 @@ import java.util.concurrent.CountDownLatch;
  * Logistic service in charge of delivering books that have been purchased to customers.
  * Handles {@link DeliveryEvent}.
  * This class may not hold references for objects which it is not responsible for:
- * {@link ResourcesHolder}, {@link MoneyRegister}, {@link Inventory}.
+ * {@link /ResourcesHolder}, {@link /MoneyRegister}, {@link /Inventory}.
  * 
  * You can add private fields and public methods to this class.
  * You MAY change constructor signatures and even add new public constructors.
@@ -33,13 +33,13 @@ public class LogisticsService extends MicroService {
 			int distance = DeliveryEventCallback.getDistance();
 			DeliveryEventCallback.getDeliveryVehicle().deliver(address,distance);
 			complete(DeliveryEventCallback, true);
-			System.out.println(getName()+" completed a delivery");
+			//System.out.println(getName()+" completed a delivery");
 		});
 
 		subscribeBroadcast(TickBroadcast.class, TickBroadcastCallback -> {
 			this.CurrentTime = TickBroadcastCallback.getCurrentTime();
 			if (TickBroadcastCallback.getCurrentTime() == TickBroadcastCallback.getDuration()) {
-				System.out.println(getName()+" is being terminated");
+				//System.out.println(getName()+" is being terminated");
 				terminate();
 			}
 		});

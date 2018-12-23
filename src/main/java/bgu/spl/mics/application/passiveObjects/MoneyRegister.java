@@ -76,7 +76,7 @@ public class MoneyRegister implements Serializable{
 			currentTotal = total.get();
 			updatedCurrentTotal = currentTotal + amount;
 		} while (!total.compareAndSet(currentTotal,updatedCurrentTotal));
-		System.out.println("just charged the credit card of " + c.getName()+" for "+amount+".");
+		//System.out.println("just charged the credit card of " + c.getName()+" for "+amount+".");
 	}
 	
 	/**
@@ -93,7 +93,7 @@ public class MoneyRegister implements Serializable{
             CustObject.close();
             CustFile.close();
 		} catch (IOException e) {
-        System.out.println("something's wrong with list of reciepts");;
+        System.out.println("something's wrong with list of receipts");
 		}
 	}
 

@@ -43,25 +43,25 @@ public class SellingService extends MicroService{
 			while(!getBookPriceEventFuture.isDone());
 			int price = getBookPriceEventFuture.get();
 			if (price == -1) { // book is not available
-				System.out.println(getName() + " completed an OrderBookEvent regarding book " + OrderBookEventCallback.getBookName()+" with null because book is not available");
+				//System.out.println(getName() + " completed an OrderBookEvent regarding book " + OrderBookEventCallback.getBookName()+" with null because book is not available");
 				complete(OrderBookEventCallback, null);
 			}
 			else { // book is available
 				if (OrderBookEventCallback.getCustomer().reserveAmount(price)) { // customer has enough money
 					CheckAvailabilityEvent checkAvailabilityEvent = new CheckAvailabilityEvent(OrderBookEventCallback.getBookName());
 					Future<Integer> checkAvailabilityEventFuture = sendEvent(checkAvailabilityEvent);
-					System.out.println(getName()+" sent a CheckAvailabilityEvent");
+					//System.out.println(getName()+" sent a CheckAvailabilityEvent");
 					while (!checkAvailabilityEventFuture.isDone()) ;
-					System.out.println(getName()+" says: checkAvailabilityEvent is done");
+					//System.out.println(getName()+" says: checkAvailabilityEvent is done");
 					boolean isAvailable = checkAvailabilityEventFuture.get() >= 0;
-					System.out.println(getName()+" isAvailable?: " + isAvailable);
+					//System.out.println(getName()+" isAvailable?: " + isAvailable);
 					if (isAvailable) { // book is in stock & customer has enough money
 						moneyRegister.chargeCreditCard(OrderBookEventCallback.getCustomer(), price);
 						AcquireVehicleEvent acquireVehicleEvent = new AcquireVehicleEvent(OrderBookEventCallback.getCustomer().getAddress(), OrderBookEventCallback.getCustomer().getDistance());
-						System.out.println(getName() + " ordered a vehicle for book " + OrderBookEventCallback.getBookName());
+						//System.out.println(getName() + " ordered a vehicle for book " + OrderBookEventCallback.getBookName());
 						Future<DeliveryVehicle> acquireVehicleEventFuture = sendEvent(acquireVehicleEvent);
 						while (!acquireVehicleEventFuture.isDone());
-						System.out.println(getName()+" acquireVehicleEventFuture is done");
+						//System.out.println(getName()+" acquireVehicleEventFuture is done");
 						DeliveryVehicle deliveryVehicle = acquireVehicleEventFuture.get();
 						DeliveryEvent deliveryEvent = new DeliveryEvent(deliveryVehicle,OrderBookEventCallback.getCustomer().getAddress(),OrderBookEventCallback.getCustomer().getDistance());
 						Future<Boolean> deliveryEventFuture = sendEvent(deliveryEvent);
@@ -70,16 +70,16 @@ public class SellingService extends MicroService{
 						sendEvent(releaseVehicleEvent);
 						OrderReceipt orderReceipt = new OrderReceipt(OrderBookEventCallback.getReceiptId(), getName(), OrderBookEventCallback.getCustomer().getId(), OrderBookEventCallback.getBookName(), price, OrderBookEventCallback.getOrderTick(), OrderBookEventCallback.getProccessTick(), 0);
 						moneyRegister.file(orderReceipt);
-						System.out.println(getName() + " completed an OrderBookEvent regarding book " + OrderBookEventCallback.getBookName()+" with a purchase!");
+						//System.out.println(getName() + " completed an OrderBookEvent regarding book " + OrderBookEventCallback.getBookName()+" with a purchase!");
 						complete(OrderBookEventCallback, orderReceipt);
 					} else { // book not is stock
 						OrderBookEventCallback.getCustomer().releaseAmount(price);
 						complete(OrderBookEventCallback, null);
-						System.out.println(getName() + " completed an OrderBookEvent regarding book " + OrderBookEventCallback.getBookName()+" with null because book is not available");
+						//System.out.println(getName() + " completed an OrderBookEvent regarding book " + OrderBookEventCallback.getBookName()+" with null because book is not available");
 					}
 				} else { // customer doesn't have enough money
 					complete(OrderBookEventCallback, null);
-					System.out.println(getName()+" completed an OrderBookEvent with null because customer didn't have enough money");
+					//System.out.println(getName()+" completed an OrderBookEvent with null because customer didn't have enough money");
 				}
 			}
 		});
@@ -87,7 +87,7 @@ public class SellingService extends MicroService{
 		subscribeBroadcast(TickBroadcast.class, TickBroadcastCallback -> {
 			this.CurrentTime = TickBroadcastCallback.getCurrentTime();
 			if (TickBroadcastCallback.getCurrentTime() == TickBroadcastCallback.getDuration()) {
-				System.out.println(getName()+" is being terminated");
+				//System.out.println(getName()+" is being terminated");
 				terminate();
 			}
 		});

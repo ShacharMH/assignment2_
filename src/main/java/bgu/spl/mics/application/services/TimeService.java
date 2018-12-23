@@ -41,7 +41,7 @@ public class TimeService extends MicroService{
 
 
 		}
-		System.out.println(getName()+" is being terminated");
+		//System.out.println(getName()+" is being terminated");
 		this.terminate();
 		
 	}

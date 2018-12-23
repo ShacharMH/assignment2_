@@ -70,7 +70,7 @@ public class ResourcesHolder {
      */
     public void releaseVehicle(DeliveryVehicle vehicle) {
         listOfCars.add(vehicle);
-        System.out.println("a vehicle has been released");
+        //System.out.println("a vehicle has been released");
         semaphore.release();
     }
 
